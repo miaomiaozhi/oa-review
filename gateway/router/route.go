@@ -13,18 +13,18 @@ func NewRouter() *iris.Application {
 		// midware
 		userApi.Use(iris.Compression)
 		// get info
-		userApi.Get("/", handler.GetInfo)
+		userApi.Get("/info", handler.GetInfo)
 		// login
-		userApi.Post("/", handler.Login)
+		userApi.Post("/login", handler.Login)
+		// register
+		userApi.Post("/register", handler.Register)
 	}
 	reviewApi := r.Party("review")
 	{
 		// midware
 		reviewApi.Use(iris.Compression)
-		// first review
-		reviewApi.Post("/", handler.FirstReview)
-		// final review
-		reviewApi.Post("/", handler.FinalReview)
+		// review
+		reviewApi.Post("/", handler.Review)
 	}
 	return r
 }
