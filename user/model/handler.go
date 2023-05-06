@@ -1,0 +1,94 @@
+package model
+
+import (
+	"log"
+	"sync"
+
+	"gorm.io/gorm"
+)
+
+type UserDao struct{}
+
+var userDao *UserDao
+var userOnce sync.Once
+
+func NewUserDaoInstance() *UserDao {
+	userOnce.Do(func() {
+		userDao = &UserDao{}
+	})
+	return userDao
+}
+
+// 申请的结构
+type Application struct {
+	gorm.Model
+	ApplicationId int64  `gorm:"primary_key"`
+	Context       string `gorm:"default:(-)"`
+	ReviewStatus  bool   `gorm:"default:(-)"`
+}
+
+// 用户基本信息
+type User struct {
+	gorm.Model
+	UserId       int64          `gorm:"primary_key"`
+	Name         string         `gorm:"default:(-)"`
+	Applications []*Application `gorm:"default:(-)"`
+	Priority     int32          `gorm:"default:(-)"`
+}
+
+/*
+*
+根据用户名和密码，创建一个新的 User，返回UserId
+*/
+func (*UserDao) CreateUser(user *User) (int64, error) {
+	result := DB.Create(&user)
+	if result.Error != nil {
+		return -1, result.Error
+	}
+	return user.UserId, nil
+}
+
+/*
+*
+根据用户名，查找用户实体
+*/
+func (*UserDao) FindUserByName(username string) (*User, error) {
+	user := User{Name: username}
+
+	result := DB.Where("name = ?", username).First(&user)
+	err := result.Error
+	if err != nil {
+		log.Printf("Error on find user by name:%v\n", err)
+		return nil, err
+	}
+	return &user, nil
+}
+
+/*
+*
+根据用户id，查找用户实体
+*/
+func (*UserDao) FindUserById(id int64) (*User, error) {
+	user := User{UserId: id}
+
+	result := DB.Where("user_id = ?", id).First(&user)
+	err := result.Error
+	if err != nil {
+		log.Printf("Error on find user by id:%v\n", err)
+		return nil, err
+	}
+	return &user, nil
+}
+
+/*
+根据返回所有审核人用户，列表形式
+*/
+func (*UserDao) FindReviewerList() ([]*User, error) {
+	var reviewer []*User
+	result := DB.Where("priority > ?", 0).Order("priority asc").Find(reviewer)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return reviewer, nil
+}
+
