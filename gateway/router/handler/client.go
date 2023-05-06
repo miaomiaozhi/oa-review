@@ -6,6 +6,7 @@ import (
 	pb "oa-review/gateway/services"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type grpcClient struct {
@@ -33,7 +34,7 @@ func (c *grpcClient) Close() {
 }
 
 func newGrpcClient() (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Println("Error on create grpc client")
 		return nil, err

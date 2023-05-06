@@ -1,23 +1,23 @@
-package user
+package main
 
 import (
 	"log"
 	"net"
-	pb "oa-review/user/services"
 	server "oa-review/user/rpc_server"
+	pb "oa-review/user/services"
+
 	"google.golang.org/grpc"
 )
 
-func Run() {
+func main() {
 	userServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(userServer, &server.UserService{})
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("Failed to listen: %v\n", err)
 	}
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
-		}
-	}()
+
+	pb.RegisterUserServiceServer(userServer, &server.UserService{})
+
+	log.Println("Success on user server")
+	userServer.Serve(lis)
 }

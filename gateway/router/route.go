@@ -18,13 +18,24 @@ func NewRouter() *iris.Application {
 		userApi.Post("/login", handler.Login)
 		// register
 		userApi.Post("/register", handler.Register)
+		// submit
+		userApi.Post("/submit", handler.Submit)
+		// retrieval
+		userApi.Post("/retrieval", handler.Retrieval)
 	}
-	reviewApi := r.Party("review")
+	reviewApi := r.Party("/review")
 	{
 		// midware
 		reviewApi.Use(iris.Compression)
 		// review
 		reviewApi.Post("/", handler.Review)
 	}
+
+	// test connect
+	r.Get("/", func(ctx iris.Context) {
+		ctx.JSON(iris.Map{
+			"message": "ok",
+		})
+	})
 	return r
 }

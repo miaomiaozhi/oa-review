@@ -4,7 +4,7 @@
 // - protoc             v3.6.1
 // source: user.proto
 
-package proto
+package services
 
 import (
 	context "context"
@@ -25,6 +25,8 @@ type UserServiceClient interface {
 	Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
 	Register(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error)
 	GetInfo(ctx context.Context, in *UserGetInfoRequest, opts ...grpc.CallOption) (*UserGetInfoResponse, error)
+	SubmitApplication(ctx context.Context, in *UserSubmitApplicationRequest, opts ...grpc.CallOption) (*UserSubmitApplicationResponse, error)
+	RetrievalApplication(ctx context.Context, in *UserRetrievalApplicationRequest, opts ...grpc.CallOption) (*UserRetrievalApplicationResponse, error)
 }
 
 type userServiceClient struct {
@@ -37,7 +39,7 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 
 func (c *userServiceClient) Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error) {
 	out := new(UserLoginResponse)
-	err := c.cc.Invoke(ctx, "/proto.UserService/Login", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/user.UserService/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +48,7 @@ func (c *userServiceClient) Login(ctx context.Context, in *UserLoginRequest, opt
 
 func (c *userServiceClient) Register(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error) {
 	out := new(UserRegisterResponse)
-	err := c.cc.Invoke(ctx, "/proto.UserService/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/user.UserService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +57,25 @@ func (c *userServiceClient) Register(ctx context.Context, in *UserRegisterReques
 
 func (c *userServiceClient) GetInfo(ctx context.Context, in *UserGetInfoRequest, opts ...grpc.CallOption) (*UserGetInfoResponse, error) {
 	out := new(UserGetInfoResponse)
-	err := c.cc.Invoke(ctx, "/proto.UserService/GetInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SubmitApplication(ctx context.Context, in *UserSubmitApplicationRequest, opts ...grpc.CallOption) (*UserSubmitApplicationResponse, error) {
+	out := new(UserSubmitApplicationResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/SubmitApplication", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) RetrievalApplication(ctx context.Context, in *UserRetrievalApplicationRequest, opts ...grpc.CallOption) (*UserRetrievalApplicationResponse, error) {
+	out := new(UserRetrievalApplicationResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/RetrievalApplication", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +89,8 @@ type UserServiceServer interface {
 	Login(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
 	Register(context.Context, *UserRegisterRequest) (*UserRegisterResponse, error)
 	GetInfo(context.Context, *UserGetInfoRequest) (*UserGetInfoResponse, error)
+	SubmitApplication(context.Context, *UserSubmitApplicationRequest) (*UserSubmitApplicationResponse, error)
+	RetrievalApplication(context.Context, *UserRetrievalApplicationRequest) (*UserRetrievalApplicationResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -84,6 +106,12 @@ func (UnimplementedUserServiceServer) Register(context.Context, *UserRegisterReq
 }
 func (UnimplementedUserServiceServer) GetInfo(context.Context, *UserGetInfoRequest) (*UserGetInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
+}
+func (UnimplementedUserServiceServer) SubmitApplication(context.Context, *UserSubmitApplicationRequest) (*UserSubmitApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubmitApplication not implemented")
+}
+func (UnimplementedUserServiceServer) RetrievalApplication(context.Context, *UserRetrievalApplicationRequest) (*UserRetrievalApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrievalApplication not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -108,7 +136,7 @@ func _UserService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.UserService/Login",
+		FullMethod: "/user.UserService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).Login(ctx, req.(*UserLoginRequest))
@@ -126,7 +154,7 @@ func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.UserService/Register",
+		FullMethod: "/user.UserService/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).Register(ctx, req.(*UserRegisterRequest))
@@ -144,10 +172,46 @@ func _UserService_GetInfo_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.UserService/GetInfo",
+		FullMethod: "/user.UserService/GetInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetInfo(ctx, req.(*UserGetInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SubmitApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSubmitApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SubmitApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/SubmitApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SubmitApplication(ctx, req.(*UserSubmitApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_RetrievalApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserRetrievalApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RetrievalApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/RetrievalApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RetrievalApplication(ctx, req.(*UserRetrievalApplicationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -156,7 +220,7 @@ func _UserService_GetInfo_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.UserService",
+	ServiceName: "user.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -170,6 +234,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInfo",
 			Handler:    _UserService_GetInfo_Handler,
+		},
+		{
+			MethodName: "SubmitApplication",
+			Handler:    _UserService_SubmitApplication_Handler,
+		},
+		{
+			MethodName: "RetrievalApplication",
+			Handler:    _UserService_RetrievalApplication_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

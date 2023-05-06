@@ -1,0 +1,84 @@
+syntax = "proto3";
+package user;
+
+option go_package = "../services;services";
+
+// 申请的结构
+message Application {
+    int64 ApplicationId = 1;    // 申请id
+    string Context = 2;     // 申请内容
+    bool ReviewStatus = 3; // 审核状态 用 true/false 表示是否通过
+}
+
+// 用户基本信息
+message User {
+    int64 UserId = 1;
+    string Name = 2;
+    repeated Application Applications = 3;
+    int32 Priority = 4;
+}
+
+// 用户登录请求
+message UserLoginRequest {
+    string UserId = 1;
+    string UserPassword = 2;
+}
+message UserLoginResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+    string Token = 3;
+}
+
+// 用户注册
+message UserRegisterRequest {
+    string UserId = 1;
+    string UserPassword = 2;
+    int32 Priority = 3;
+}
+message UserRegisterResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+    string Token = 3;
+}
+
+// 用户信息
+message UserGetInfoRequest {
+    int64 UserId = 1;
+    string UserPassword = 2;
+}
+message UserGetInfoResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+    User user = 3;
+}
+
+// 用户提交申请请求
+message UserSubmitApplicationRequest {
+    int64 UserId = 1;
+    string ApplicationContext = 2;
+}
+// 用户提交申请响应
+message UserSubmitApplicationResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+}
+
+// 用户检索申请请求
+message UserRetrievalApplicationRequest {
+    int64 UserId = 1;
+    int64 ApplicationId = 2;
+}
+// 用户检索申请响应
+message UserRetrievalApplicationResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+    bool ReviewStatue = 3;
+}
+
+service UserService {
+    rpc Login(UserLoginRequest) returns (UserLoginResponse);
+    rpc Register(UserRegisterRequest) returns (UserRegisterResponse);
+    rpc GetInfo(UserGetInfoRequest) returns (UserGetInfoResponse);
+    rpc SubmitApplication(UserSubmitApplicationRequest) returns (UserSubmitApplicationResponse);
+    rpc RetrievalApplication(UserRetrievalApplicationRequest) returns (UserRetrievalApplicationResponse);
+}
