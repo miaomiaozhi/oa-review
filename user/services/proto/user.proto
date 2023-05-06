@@ -9,26 +9,29 @@ message User {
     string Name = 2;
     string Application = 3;
     int32 ReviewStatus = 4;
+    int32 Priority = 5;
 }
 
 // 用户登录请求
 message UserLoginRequest {
-    int64 UserId = 1;
-    int64 UserPassword = 2;
+    string UserId = 1;
+    string UserPassword = 2;
 }
 message UserLoginResponse {
     int32 StatusCode = 1;
     string StatusMsg = 2;
+    string Token = 3;
 }
 
 // 用户注册
 message UserRegisterRequest {
-    int64 UserId = 1;
-    int64 UserPassword = 2;
+    string UserId = 1;
+    string UserPassword = 2;
 }
 message UserRegisterResponse {
     int32 StatusCode = 1;
     string StatusMsg = 2;
+    string Token = 3;
 }
 
 // 用户信息
