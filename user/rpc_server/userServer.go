@@ -3,7 +3,6 @@ package rpcserver
 import (
 	"context"
 	"fmt"
-	"log"
 	model "oa-review/user/model"
 	services "oa-review/user/services"
 	"strconv"
@@ -12,18 +11,6 @@ import (
 
 type UserService struct {
 	services.UnimplementedUserServiceServer
-}
-
-// tmp cache
-var Users map[int64]*model.User
-var Reviewers map[int64]*model.User
-var AppList map[int64]*model.Application
-
-func init() {
-	log.Println("init user server tmp cache")
-	Users = make(map[int64]*model.User)
-	Reviewers = make(map[int64]*model.User)
-	AppList = make(map[int64]*model.Application)
 }
 
 /*
@@ -62,10 +49,7 @@ func (userService *UserService) Login(ctx context.Context, req *services.UserLog
 }
 
 /*
-req:
-userid string
-userpassword string
-priority int32
+用户注册
 */
 func (userService *UserService) Register(ctx context.Context, req *services.UserRegisterRequest) (*services.UserRegisterResponse, error) {
 	ErrResponse := func(errorMsg string) (*services.UserRegisterResponse, error) {
@@ -96,7 +80,14 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 
 	// 审核人注册
 	if user.Priority > 0 {
-		Reviewers[user.UserId] = &user
+		Reviewers[user.UserId] = &model.Reviewer{
+			UserId:       user.UserId,
+			Name:         user.Name,
+			Applications: user.Applications,
+			Options:      make([]*model.ReviewOption, 0),
+			Priority:     user.Priority,
+			CreatedAt:    user.CreatedAt,
+		}
 	}
 
 	if _, exist := Users[userId]; exist {
@@ -143,9 +134,7 @@ func (userService *UserService) GetInfo(ctx context.Context, req *services.UserG
 }
 
 /*
-req:
-userid int64
-app context string
+提交申请
 */
 func (userService *UserService) SubmitApplication(ctx context.Context, req *services.UserSubmitApplicationRequest) (*services.UserSubmitApplicationResponse, error) {
 	ErrResponse := func(errorMsg string) (*services.UserSubmitApplicationResponse, error) {
@@ -185,9 +174,8 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 }
 
 /*
-req:
-userid int64
-appid int64
+检索请求列表
+// TODO 无法处理 JSON 无法显示 0 值的问题
 */
 func (userService *UserService) RetrievalApplication(ctx context.Context, req *services.UserRetrievalApplicationRequest) (*services.UserRetrievalApplicationResponse, error) {
 	ErrResponse := func(errorMsg string) (*services.UserRetrievalApplicationResponse, error) {
@@ -209,42 +197,7 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 	}, nil
 }
 
-/*
-提交申请
-*/
-func (userService *UserService) SubmitReview(ctx context.Context, req *services.UserSubmitReviewRequest) (*services.UserSubmitReviewResponse, error) {
-	ErrResponse := func(errorMsg string) (*services.UserSubmitReviewResponse, error) {
-		return &services.UserSubmitReviewResponse{
-			StatusCode: 400,
-			StatusMsg:  errorMsg,
-		}, nil
-	}
-	if req.UserId < 0 {
-		return ErrResponse("user id illegal")
-	}
-	if _, userExist := Users[req.UserId]; !userExist {
-		return ErrResponse("user not find")
-	}
-	if _, appExist := AppList[req.ApplicationId]; !appExist {
-		return ErrResponse("app not find")
-	}
-
-	// updata sql data app
-	if req.ReviewStatus {
-		AppList[req.ApplicationId].ApprovedReviewer[req.UserId] = true
-		AppList[req.ApplicationId].ReviewStatus = (len(AppList[req.ApplicationId].ApprovedReviewer) == len(Reviewers))
-	}
-
-	// update user data applist
-
-	return &services.UserSubmitReviewResponse{
-		StatusCode: 200,
-		StatusMsg:  "ok",
-	}, nil
-}
-
 // userful api
-
 func ModelAppToServicesApp(apps []*model.Application) []*services.Application {
 	res := make([]*services.Application, 0)
 	for _, v := range apps {

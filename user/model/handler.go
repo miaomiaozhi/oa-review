@@ -27,7 +27,7 @@ type Application struct {
 	Context          string         `gorm:"default:(-)"`
 	ReviewStatus     bool           `gorm:"default:(-)"`
 	UserId           int64          `gorm:"default:(-)"`
-	ApprovedReviewer map[int64]bool `gorm:"default:(-)"`
+	ApprovedReviewer map[int64]bool `gorm:"default:(-)"` // 数据库不支持
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
@@ -45,17 +45,34 @@ type User struct {
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
 
-func NewModelUser() *User {
-	return &User{
-		Applications: make([]int64, 0),
-	}
+type ReviewOption struct {
+	ApplicationId int64
+	ReviewStatus  bool
 }
 
-func NewModelApplication() *Application {
-	return &Application{
-		ApprovedReviewer: make(map[int64]bool, 0),
-	}
+// Reviewer info
+type Reviewer struct {
+	UserId       int64           `gorm:"primary_key"`
+	Name         string          `gorm:"default:(-)"`
+	Applications []int64         `gorm:"default:(-)"`
+	Options      []*ReviewOption `gorm:"default:(-)"`
+	Priority     int32           `gorm:"default:(-)"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
+
+// func NewModelUser() *User {
+// 	return &User{
+// 		Applications: make([]int64, 0),
+// 	}
+// }
+
+// func NewModelApplication() *Application {
+// 	return &Application{
+// 		ApprovedReviewer: make(map[int64]bool, 0),
+// 	}
+// }
 
 /*
 *
