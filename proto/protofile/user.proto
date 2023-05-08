@@ -33,6 +33,7 @@ message UserLoginResponse {
 message UserRegisterRequest {
     string UserId = 1;
     string UserPassword = 2;
+    // TODO: add UserName
     int32 Priority = 3;
 }
 message UserRegisterResponse {
@@ -66,14 +67,19 @@ message UserSubmitApplicationResponse {
 // 用户检索申请请求
 message UserRetrievalApplicationRequest {
     int64 UserId = 1;
+    // Delete
     int64 ApplicationId = 2;
 }
 // 用户检索申请响应
 message UserRetrievalApplicationResponse {
     int32 StatusCode = 1;
     string StatusMsg = 2;
+    // return App List
     bool ReviewStatue = 3;
 }
+
+// TODO:
+// Add UserReview RPC
 
 service UserService {
     rpc Login(UserLoginRequest) returns (UserLoginResponse);

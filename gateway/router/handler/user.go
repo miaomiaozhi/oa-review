@@ -43,7 +43,7 @@ func Register(ctx iris.Context) {
 
 func GetInfo(ctx iris.Context) {
 	req := &pb.UserGetInfoRequest{}
-	log.Println("to here 0")
+	// log.Println("to here 0")
 
 	if err := ctx.ReadJSON(req); err != nil {
 		log.Printf("Error on user get info: %v\n", err)
@@ -51,14 +51,14 @@ func GetInfo(ctx iris.Context) {
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	log.Println("to here 1")
+	// log.Println("to here 1")
 	resp, err := C.userClient.GetInfo(context.Background(), req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
 		return
 	}
-	log.Println("to here 2")
+	// log.Println("to here 2")
 	ctx.JSON(resp)
 }
 

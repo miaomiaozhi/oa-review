@@ -3,6 +3,7 @@ package model
 import (
 	"log"
 	"sync"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,21 +20,28 @@ func NewUserDaoInstance() *UserDao {
 	return userDao
 }
 
-// 申请的结构
+// Application info
 type Application struct {
 	gorm.Model
 	ApplicationId int64  `gorm:"primary_key"`
 	Context       string `gorm:"default:(-)"`
 	ReviewStatus  bool   `gorm:"default:(-)"`
+	UserId        int64  `gorm:"default:(-)"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
 
-// 用户基本信息
+// User info
 type User struct {
-	gorm.Model
 	UserId       int64          `gorm:"primary_key"`
+	Password     string         `gorm:"default:(-)"`
 	Name         string         `gorm:"default:(-)"`
 	Applications []*Application `gorm:"default:(-)"`
 	Priority     int32          `gorm:"default:(-)"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
 
 /*
@@ -91,4 +99,3 @@ func (*UserDao) FindReviewerList() ([]*User, error) {
 	}
 	return reviewer, nil
 }
-

@@ -20,8 +20,8 @@ func NewRouter() *iris.Application {
 		userApi.Post("/register", handler.Register)
 		// submit
 		userApi.Post("/submit", handler.Submit)
-		// retrieval
-		userApi.Post("/retrieval", handler.Retrieval)
+		// retrieval application
+		userApi.Get("/retrieval", handler.Retrieval)
 	}
 	reviewApi := r.Party("/review")
 	{

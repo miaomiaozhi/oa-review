@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/golang/protobuf v1.5.3
-	github.com/jinzhu/gorm v1.9.16
 	github.com/kataras/iris/v12 v12.2.0
 	google.golang.org/grpc v1.55.0
 	gopkg.in/ini.v1 v1.67.0
