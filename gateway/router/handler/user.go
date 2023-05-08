@@ -97,3 +97,36 @@ func Retrieval(ctx iris.Context) {
 	}
 	ctx.JSON(resp)
 }
+
+func SubmitReview(ctx iris.Context) {
+	req := &pb.UserSubmitReviewRequest{}
+	if err := ctx.ReadJSON(req); err != nil {
+		errResponse(ctx, fmt.Sprintf("Error on read:%v", err.Error()))
+		return
+	}
+	resp, err := C.userClient.SubmitReview(context.Background(), req)
+	if err != nil {
+		errResponse(ctx, fmt.Sprintf("Error on connect client:%v", err.Error()))
+		return
+	}
+	ctx.JSON(resp)
+}
+
+func WithdrawReview(ctx iris.Context) {
+	req := &pb.UserWithdrawReviewRequest{}
+	if err := ctx.ReadJSON(req); err != nil {
+		errResponse(ctx, fmt.Sprintf("Error on read:%v", err.Error()))
+		return
+	}
+	resp, err := C.userClient.WithdrawReview(context.Background(), req)
+	if err != nil {
+		errResponse(ctx, fmt.Sprintf("Error on connect client:%v", err.Error()))
+		return
+	}
+	ctx.JSON(resp)
+}
+
+func errResponse(ctx iris.Context, errMsg string) {
+	ctx.StatusCode(iris.StatusBadRequest)
+	ctx.WriteString(errMsg)
+}

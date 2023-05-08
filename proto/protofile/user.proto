@@ -18,7 +18,7 @@ message User {
     int32 Priority = 4;
 }
 
-// 用户登录请求
+// 用户登录请求 POST
 message UserLoginRequest {
     string UserId = 1;
     string UserPassword = 2;
@@ -29,12 +29,12 @@ message UserLoginResponse {
     string Token = 3;
 }
 
-// 用户注册
+// 用户注册 POST
 message UserRegisterRequest {
     string UserId = 1;
     string UserPassword = 2;
-    // TODO: add UserName
-    int32 Priority = 3;
+    string UserName = 3;
+    int32 Priority = 4;
 }
 message UserRegisterResponse {
     int32 StatusCode = 1;
@@ -42,7 +42,7 @@ message UserRegisterResponse {
     string Token = 3;
 }
 
-// 用户信息
+// 用户信息 GET
 message UserGetInfoRequest {
     int64 UserId = 1;
     string UserPassword = 2;
@@ -53,33 +53,45 @@ message UserGetInfoResponse {
     User user = 3;
 }
 
-// 用户提交申请请求
+// 用户提交申请请求 POST
 message UserSubmitApplicationRequest {
     int64 UserId = 1;
     string ApplicationContext = 2;
 }
-// 用户提交申请响应
 message UserSubmitApplicationResponse {
     int32 StatusCode = 1;
     string StatusMsg = 2;
 }
 
-// 用户检索申请请求
+// 用户检索申请请求 GET
 message UserRetrievalApplicationRequest {
     int64 UserId = 1;
-    // Delete
-    int64 ApplicationId = 2;
 }
-// 用户检索申请响应
 message UserRetrievalApplicationResponse {
     int32 StatusCode = 1;
     string StatusMsg = 2;
-    // return App List
-    bool ReviewStatue = 3;
+    repeated Application Applications = 3;
 }
 
-// TODO:
-// Add UserReview RPC
+// 提交审核 POST
+message UserSubmitReviewRequest {
+    int64 UserId = 1;
+    int64 ApplicationId = 2;
+    bool ReviewStatus = 3; // 审核情况 true 表示通过 false 表示不通过
+}
+message UserSubmitReviewResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+}
+
+// 撤回审核
+message UserWithdrawReviewRequest {
+    int64 UserId = 1;
+}
+message UserWithdrawReviewResponse {
+    int32 StatusCode = 1;
+    string StatusMsg = 2;
+}
 
 service UserService {
     rpc Login(UserLoginRequest) returns (UserLoginResponse);
@@ -87,4 +99,6 @@ service UserService {
     rpc GetInfo(UserGetInfoRequest) returns (UserGetInfoResponse);
     rpc SubmitApplication(UserSubmitApplicationRequest) returns (UserSubmitApplicationResponse);
     rpc RetrievalApplication(UserRetrievalApplicationRequest) returns (UserRetrievalApplicationResponse);
+    rpc SubmitReview(UserSubmitReviewRequest) returns (UserSubmitReviewResponse);
+    rpc WithdrawReview(UserWithdrawReviewRequest) returns (UserWithdrawReviewResponse);
 }

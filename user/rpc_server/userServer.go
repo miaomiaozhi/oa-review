@@ -15,15 +15,15 @@ type UserService struct {
 }
 
 // tmp cache
-var Users []*model.User
-var Reviewers []*model.User
-var AppList []*model.Application
+var Users map[int64]*model.User
+var Reviewers map[int64]*model.User
+var AppList map[int64]*model.Application
 
 func init() {
 	log.Println("init user server tmp cache")
-	Users = make([]*model.User, 0)
-	Reviewers = make([]*model.User, 0)
-	AppList = make([]*model.Application, 0)
+	Users = make(map[int64]*model.User)
+	Reviewers = make(map[int64]*model.User)
+	AppList = make(map[int64]*model.Application)
 }
 
 /*
@@ -31,6 +31,8 @@ req:
 UserId string
 UserPassword string
 rep
+
+FINISH
 */
 func (userService *UserService) Login(ctx context.Context, req *services.UserLoginRequest) (*services.UserLoginResponse, error) {
 	ErrResponse := func(errorMsg string) (*services.UserLoginResponse, error) {
@@ -47,17 +49,14 @@ func (userService *UserService) Login(ctx context.Context, req *services.UserLog
 		return ErrResponse("error login user fmt")
 	}
 
-	userIdx, exist := CheckUserExist(&services.User{
-		UserId: userId,
-	})
-	if !exist || Users[userIdx].Password != userPsw {
+	if _, exist := Users[userId]; !exist || Users[userId].Password != userPsw {
 		return ErrResponse(fmt.Sprintf("can not find user"))
 	}
 
 	// DAO finding user
 	return &services.UserLoginResponse{
 		StatusCode: 200,
-		StatusMsg:  fmt.Sprintf("user id :%v, app size :%v", Users[userIdx].UserId, len(Users[userIdx].Applications)),
+		StatusMsg:  fmt.Sprintf("user id :%v, app size :%v", Users[userId].UserId, len(Users[userId].Applications)),
 		Token:      "jwt token",
 	}, nil
 }
@@ -76,30 +75,36 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 			Token:      "",
 		}, nil
 	}
-	user := model.User{
-		Password:     req.UserPassword,
-		Name:         "empty", // delete
-		Applications: make([]*model.Application, 0),
-		Priority:     req.Priority,
-		CreatedAt:    time.Now().UTC(),
-	}
 
-	if req.UserId == "" || req.UserPassword == "" {
+	if req.UserId == "" || req.UserPassword == "" || req.UserName == "" {
 		return ErrResponse("user id and user password can not be empty")
 	}
 	userId, err := strconv.ParseInt(req.UserId, 10, 64)
 	if err != nil {
-		return ErrResponse("error register user fmt")
+		return ErrResponse("illegal user id")
 	}
 
-	_, exist := CheckUserExist(&services.User{
-		UserId: userId,
-	})
-	if exist {
+	// 普通用户注册
+	user := model.User{
+		UserId:       userId,
+		Password:     req.UserPassword,
+		Name:         req.UserName,
+		Applications: make([]int64, 0),
+		Priority:     req.Priority,
+		CreatedAt:    time.Now().UTC(),
+	}
+
+	// 审核人注册
+	if user.Priority > 0 {
+		Reviewers[user.UserId] = &user
+	}
+
+	if _, exist := Users[userId]; exist {
 		return ErrResponse("already exist")
 	}
+
 	user.UserId = userId
-	Users = append(Users, &user)
+	Users[userId] = &user
 	return &services.UserRegisterResponse{
 		StatusCode: 200,
 		StatusMsg:  "register successfully",
@@ -124,17 +129,15 @@ func (userService *UserService) GetInfo(ctx context.Context, req *services.UserG
 	if req.UserId < 0 || req.UserPassword == "" {
 		return ErrResponse("user id and user password can not be empty")
 	}
-	userIdx := 0
-	if t, cor := CheckUserPswCorrect(req.UserId, req.UserPassword); !cor {
-		userIdx = t
+	if _, exist := Users[req.UserId]; !exist || Users[req.UserId].Password != req.UserPassword {
 		return ErrResponse("password wrong")
 	}
 
-	user := ModelUserToServicesUser(*Users[userIdx])
+	user := ModelUserToServicesUser(*Users[req.UserId])
 	// user = *model.ModelUserToServicesUser(Users[userIdx])
 	return &services.UserGetInfoResponse{
 		StatusCode: 200,
-		StatusMsg:  fmt.Sprintf("user id :%v, user psw :%v", req.UserId, req.UserPassword),
+		StatusMsg:  fmt.Sprintf("user id :%v, welcome login", req.UserId),
 		User:       &user,
 	}, nil
 }
@@ -154,18 +157,27 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 	if req.UserId < 0 {
 		return ErrResponse("user id and user password can not be empty")
 	}
-	userIdx, exist := CheckUserExist(&services.User{UserId: req.UserId})
-	if !exist {
+
+	// 判断用户是否存在
+	if _, exist := Users[req.UserId]; !exist {
 		return ErrResponse("can not find user")
 	}
+
+	// 新建申请
 	app := &model.Application{
-		ApplicationId: int64(len(AppList)),
-		Context:       req.ApplicationContext,
-		ReviewStatus:  false,
-		UserId:        req.UserId,
+		ApplicationId:    int64(len(AppList)),
+		Context:          req.ApplicationContext,
+		ReviewStatus:     false,
+		UserId:           req.UserId,
+		ApprovedReviewer: make(map[int64]bool), // 已通过的审核人
 	}
-	Users[userIdx].Applications = append(Users[userIdx].Applications, app)
-	AppList = append(AppList, app)
+
+	// 将 请求加入用户的请求列表
+	userId := req.UserId
+	Users[userId].Applications = append(Users[userId].Applications, app.ApplicationId)
+
+	// 将请求加入 数据库
+	AppList[app.ApplicationId] = app
 	return &services.UserSubmitApplicationResponse{
 		StatusCode: 200,
 		StatusMsg:  "submit application successfully",
@@ -184,48 +196,54 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 			StatusMsg:  errorMsg,
 		}, nil
 	}
-	if req.UserId < 0 || req.ApplicationId < 0 {
-		return ErrResponse("user id or app id illegal")
-	}
-	if _, CheckUserExist := CheckUserExist(&services.User{UserId: req.UserId}); !CheckUserExist {
+	if _, ok := Users[req.UserId]; !ok {
 		return ErrResponse("user not find")
 	}
-	appIdx, exist := CheckAppExist(&services.Application{ApplicationId: req.ApplicationId})
-	if !exist {
-		return ErrResponse("application not find")
-	}
+
+	res := AppIdListToApp(Users[req.UserId].Applications)
+
 	return &services.UserRetrievalApplicationResponse{
 		StatusCode:   200,
 		StatusMsg:    "ok",
-		ReviewStatue: AppList[appIdx].ReviewStatus,
+		Applications: res,
 	}, nil
 }
 
-// userful app
-func CheckUserExist(user *services.User) (int, bool) {
-	userIdx := int(-1)
-	for i, v := range Users {
-		if user.UserId == v.UserId {
-			userIdx = i
-			break
-		}
+/*
+提交申请
+*/
+func (userService *UserService) SubmitReview(ctx context.Context, req *services.UserSubmitReviewRequest) (*services.UserSubmitReviewResponse, error) {
+	ErrResponse := func(errorMsg string) (*services.UserSubmitReviewResponse, error) {
+		return &services.UserSubmitReviewResponse{
+			StatusCode: 400,
+			StatusMsg:  errorMsg,
+		}, nil
 	}
-	if userIdx == -1 {
-		return -1, false
-	} else {
-		return userIdx, true
+	if req.UserId < 0 {
+		return ErrResponse("user id illegal")
 	}
+	if _, userExist := Users[req.UserId]; !userExist {
+		return ErrResponse("user not find")
+	}
+	if _, appExist := AppList[req.ApplicationId]; !appExist {
+		return ErrResponse("app not find")
+	}
+
+	// updata sql data app
+	if req.ReviewStatus {
+		AppList[req.ApplicationId].ApprovedReviewer[req.UserId] = true
+		AppList[req.ApplicationId].ReviewStatus = (len(AppList[req.ApplicationId].ApprovedReviewer) == len(Reviewers))
+	}
+
+	// update user data applist
+
+	return &services.UserSubmitReviewResponse{
+		StatusCode: 200,
+		StatusMsg:  "ok",
+	}, nil
 }
 
-func CheckUserPswCorrect(userId int64, userPsw string) (int, bool) {
-	userIdx, exist := CheckUserExist(&services.User{
-		UserId: userId,
-	})
-	if !exist {
-		return -1, false
-	}
-	return userIdx, Users[userIdx].Password == userPsw
-}
+// userful api
 
 func ModelAppToServicesApp(apps []*model.Application) []*services.Application {
 	res := make([]*services.Application, 0)
@@ -239,25 +257,27 @@ func ModelAppToServicesApp(apps []*model.Application) []*services.Application {
 	return res
 }
 
+// 数据库中的 user 里只有 app ID List 因此要转换一下
 func ModelUserToServicesUser(user model.User) services.User {
-	return services.User{
+	res := services.User{
 		UserId:       user.UserId,
-		Applications: ModelAppToServicesApp(user.Applications),
+		Applications: AppIdListToApp(user.Applications),
 		Priority:     user.Priority,
 	}
+	return res
 }
 
-func CheckAppExist(app *services.Application) (int, bool) {
-	appIdx := int(-1)
-	for i, v := range AppList {
-		if app.ApplicationId == v.ApplicationId {
-			appIdx = i
-			break
-		}
+func AppIdListToApp(appIdList []int64) []*services.Application {
+	res := make([]*services.Application, 0)
+	for _, v := range appIdList {
+		// TODO: DAO
+
+		modelApp := AppList[int64(v)]
+		res = append(res, &services.Application{
+			ApplicationId: int64(modelApp.ApplicationId),
+			Context:       string(modelApp.Context),
+			ReviewStatus:  bool(modelApp.ReviewStatus),
+		})
 	}
-	if appIdx == -1 {
-		return -1, false
-	} else {
-		return appIdx, true
-	}
+	return res
 }

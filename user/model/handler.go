@@ -23,25 +23,38 @@ func NewUserDaoInstance() *UserDao {
 // Application info
 type Application struct {
 	gorm.Model
-	ApplicationId int64  `gorm:"primary_key"`
-	Context       string `gorm:"default:(-)"`
-	ReviewStatus  bool   `gorm:"default:(-)"`
-	UserId        int64  `gorm:"default:(-)"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	ApplicationId    int64          `gorm:"primary_key"`
+	Context          string         `gorm:"default:(-)"`
+	ReviewStatus     bool           `gorm:"default:(-)"`
+	UserId           int64          `gorm:"default:(-)"`
+	ApprovedReviewer map[int64]bool `gorm:"default:(-)"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        gorm.DeletedAt `gorm:"index"`
 }
 
 // User info
 type User struct {
-	UserId       int64          `gorm:"primary_key"`
-	Password     string         `gorm:"default:(-)"`
-	Name         string         `gorm:"default:(-)"`
-	Applications []*Application `gorm:"default:(-)"`
-	Priority     int32          `gorm:"default:(-)"`
+	UserId       int64   `gorm:"primary_key"`
+	Password     string  `gorm:"default:(-)"`
+	Name         string  `gorm:"default:(-)"`
+	Applications []int64 `gorm:"default:(-)"`
+	Priority     int32   `gorm:"default:(-)"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
+}
+
+func NewModelUser() *User {
+	return &User{
+		Applications: make([]int64, 0),
+	}
+}
+
+func NewModelApplication() *Application {
+	return &Application{
+		ApprovedReviewer: make(map[int64]bool, 0),
+	}
 }
 
 /*

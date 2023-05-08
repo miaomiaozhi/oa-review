@@ -27,6 +27,8 @@ type UserServiceClient interface {
 	GetInfo(ctx context.Context, in *UserGetInfoRequest, opts ...grpc.CallOption) (*UserGetInfoResponse, error)
 	SubmitApplication(ctx context.Context, in *UserSubmitApplicationRequest, opts ...grpc.CallOption) (*UserSubmitApplicationResponse, error)
 	RetrievalApplication(ctx context.Context, in *UserRetrievalApplicationRequest, opts ...grpc.CallOption) (*UserRetrievalApplicationResponse, error)
+	SubmitReview(ctx context.Context, in *UserSubmitReviewRequest, opts ...grpc.CallOption) (*UserSubmitReviewResponse, error)
+	WithdrawReview(ctx context.Context, in *UserWithdrawReviewRequest, opts ...grpc.CallOption) (*UserWithdrawReviewResponse, error)
 }
 
 type userServiceClient struct {
@@ -82,6 +84,24 @@ func (c *userServiceClient) RetrievalApplication(ctx context.Context, in *UserRe
 	return out, nil
 }
 
+func (c *userServiceClient) SubmitReview(ctx context.Context, in *UserSubmitReviewRequest, opts ...grpc.CallOption) (*UserSubmitReviewResponse, error) {
+	out := new(UserSubmitReviewResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/SubmitReview", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) WithdrawReview(ctx context.Context, in *UserWithdrawReviewRequest, opts ...grpc.CallOption) (*UserWithdrawReviewResponse, error) {
+	out := new(UserWithdrawReviewResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/WithdrawReview", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -91,6 +111,8 @@ type UserServiceServer interface {
 	GetInfo(context.Context, *UserGetInfoRequest) (*UserGetInfoResponse, error)
 	SubmitApplication(context.Context, *UserSubmitApplicationRequest) (*UserSubmitApplicationResponse, error)
 	RetrievalApplication(context.Context, *UserRetrievalApplicationRequest) (*UserRetrievalApplicationResponse, error)
+	SubmitReview(context.Context, *UserSubmitReviewRequest) (*UserSubmitReviewResponse, error)
+	WithdrawReview(context.Context, *UserWithdrawReviewRequest) (*UserWithdrawReviewResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -112,6 +134,12 @@ func (UnimplementedUserServiceServer) SubmitApplication(context.Context, *UserSu
 }
 func (UnimplementedUserServiceServer) RetrievalApplication(context.Context, *UserRetrievalApplicationRequest) (*UserRetrievalApplicationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RetrievalApplication not implemented")
+}
+func (UnimplementedUserServiceServer) SubmitReview(context.Context, *UserSubmitReviewRequest) (*UserSubmitReviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubmitReview not implemented")
+}
+func (UnimplementedUserServiceServer) WithdrawReview(context.Context, *UserWithdrawReviewRequest) (*UserWithdrawReviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WithdrawReview not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -216,6 +244,42 @@ func _UserService_RetrievalApplication_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_SubmitReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSubmitReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SubmitReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/SubmitReview",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SubmitReview(ctx, req.(*UserSubmitReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_WithdrawReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserWithdrawReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).WithdrawReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/WithdrawReview",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).WithdrawReview(ctx, req.(*UserWithdrawReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +306,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RetrievalApplication",
 			Handler:    _UserService_RetrievalApplication_Handler,
+		},
+		{
+			MethodName: "SubmitReview",
+			Handler:    _UserService_SubmitReview_Handler,
+		},
+		{
+			MethodName: "WithdrawReview",
+			Handler:    _UserService_WithdrawReview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
