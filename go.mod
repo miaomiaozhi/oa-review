@@ -6,10 +6,12 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/kataras/iris/v12 v12.2.0
 	google.golang.org/grpc v1.55.0
-	gopkg.in/ini.v1 v1.67.0
+	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.0
 	gorm.io/gorm v1.25.0
 )
+
+require gopkg.in/ini.v1 v1.67.0 // indirect
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
@@ -55,6 +57,6 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect; indirects
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -20,16 +20,20 @@ func (userService *UserService) SubmitReview(ctx context.Context, req *services.
 	if req.UserId < 0 {
 		return ErrResponse("user id illegal")
 	}
+	// DAO find usr by id
 	if _, userExist := Users[req.UserId]; !userExist {
 		return ErrResponse("user not find")
 	}
+	// DAO find app by id
 	if _, appExist := AppList[req.ApplicationId]; !appExist {
 		return ErrResponse("app not find")
 	}
 
 	// 如果是一个有效状态
+	// DAO find app exist
 	_, already := AppList[req.ApplicationId].ApprovedReviewer[req.UserId]
 	if req.ReviewStatus && !already || !req.ReviewStatus && already {
+		// DAO updata reviewer
 		Reviewers[req.UserId].Options = append(Reviewers[req.UserId].Options, &model.ReviewOption{
 			ApplicationId: req.ApplicationId,
 			ReviewStatus:  req.ReviewStatus,
@@ -38,13 +42,14 @@ func (userService *UserService) SubmitReview(ctx context.Context, req *services.
 
 	// updata sql data app
 	if req.ReviewStatus {
+		// DAO update app
 		AppList[req.ApplicationId].ApprovedReviewer[req.UserId] = true
 	} else {
+		// DAO update app
 		delete(AppList[req.ApplicationId].ApprovedReviewer, req.UserId)
 	}
+	// DAO update app
 	AppList[req.ApplicationId].ReviewStatus = (len(AppList[req.ApplicationId].ApprovedReviewer) == len(Reviewers))
-
-	// update user data applist
 
 	return &services.UserSubmitReviewResponse{
 		StatusCode: 200,
@@ -62,7 +67,7 @@ func (*UserService) WithdrawReview(ctx context.Context, req *services.UserWithdr
 	if req.UserId < 0 {
 		return ErrResponse("user id illegal")
 	}
-	// DAO
+	// DAO find reviewer by id
 	if _, userExist := Reviewers[req.UserId]; !userExist {
 		return ErrResponse("user not find")
 	}
@@ -77,6 +82,7 @@ func (*UserService) WithdrawReview(ctx context.Context, req *services.UserWithdr
 	// 删除最后一个操作
 	Reviewers[req.UserId].Options = Reviewers[req.UserId].Options[:optLen-1]
 
+	// DAO updata reviewer app
 	appId, sta := option.ApplicationId, option.ReviewStatus
 	if sta {
 		delete(AppList[appId].ApprovedReviewer, req.UserId)

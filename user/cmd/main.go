@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	_ "oa-review/user/conf"
+	"oa-review/user/model"
 	server "oa-review/user/rpc_server"
 	pb "oa-review/user/services"
 
@@ -12,19 +13,19 @@ import (
 
 func main() {
 	// 初始化数据库
-	// if err := model.InitDataBase(); err != nil {
-	// 	panic("Error on init user DAO")
-	// }
+	if err := model.InitDataBase(); err != nil {
+		panic("Error on init user DAO")
+	}
 
-	log.Println("user main run")
 	userServer := grpc.NewServer()
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v\n", err)
+		return
 	}
 
 	pb.RegisterUserServiceServer(userServer, &server.UserService{})
 
-	log.Println("Success on user server")
+	log.Println("User server successfully")
 	userServer.Serve(lis)
 }

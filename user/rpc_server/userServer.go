@@ -13,6 +13,8 @@ type UserService struct {
 	services.UnimplementedUserServiceServer
 }
 
+// TODO jwt
+
 /*
 req:
 UserId string
@@ -36,11 +38,11 @@ func (userService *UserService) Login(ctx context.Context, req *services.UserLog
 		return ErrResponse("error login user fmt")
 	}
 
+	// DAO finding user
 	if _, exist := Users[userId]; !exist || Users[userId].Password != userPsw {
 		return ErrResponse(fmt.Sprintf("can not find user"))
 	}
 
-	// DAO finding user
 	return &services.UserLoginResponse{
 		StatusCode: 200,
 		StatusMsg:  fmt.Sprintf("user id :%v, app size :%v", Users[userId].UserId, len(Users[userId].Applications)),
@@ -78,7 +80,12 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 		CreatedAt:    time.Now().UTC(),
 	}
 
-	// 审核人注册
+	// DAO find user by id
+	if _, exist := Users[userId]; exist {
+		return ErrResponse("already exist")
+	}
+
+	// 审核人注册 DAO create reviewer
 	if user.Priority > 0 {
 		Reviewers[user.UserId] = &model.Reviewer{
 			UserId:       user.UserId,
@@ -88,10 +95,6 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 			Priority:     user.Priority,
 			CreatedAt:    user.CreatedAt,
 		}
-	}
-
-	if _, exist := Users[userId]; exist {
-		return ErrResponse("already exist")
 	}
 
 	user.UserId = userId
@@ -120,6 +123,7 @@ func (userService *UserService) GetInfo(ctx context.Context, req *services.UserG
 	if req.UserId < 0 || req.UserPassword == "" {
 		return ErrResponse("user id and user password can not be empty")
 	}
+	// DAO find user by user id
 	if _, exist := Users[req.UserId]; !exist || Users[req.UserId].Password != req.UserPassword {
 		return ErrResponse("password wrong")
 	}
@@ -147,7 +151,7 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 		return ErrResponse("user id and user password can not be empty")
 	}
 
-	// 判断用户是否存在
+	// DAO find user by user id 判断用户是否存在
 	if _, exist := Users[req.UserId]; !exist {
 		return ErrResponse("can not find user")
 	}
@@ -163,9 +167,11 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 
 	// 将 请求加入用户的请求列表
 	userId := req.UserId
+	// DAO find user/ updata info
 	Users[userId].Applications = append(Users[userId].Applications, app.ApplicationId)
 
 	// 将请求加入 数据库
+	// DAO create app
 	AppList[app.ApplicationId] = app
 	return &services.UserSubmitApplicationResponse{
 		StatusCode: 200,
@@ -184,10 +190,12 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 			StatusMsg:  errorMsg,
 		}, nil
 	}
+
+	// DAO find usr by id
+	// 查询实体之后 直接操作
 	if _, ok := Users[req.UserId]; !ok {
 		return ErrResponse("user not find")
 	}
-
 	res := AppIdListToApp(Users[req.UserId].Applications)
 
 	return &services.UserRetrievalApplicationResponse{
@@ -224,7 +232,7 @@ func AppIdListToApp(appIdList []int64) []*services.Application {
 	res := make([]*services.Application, 0)
 	for _, v := range appIdList {
 		// TODO: DAO
-
+		// find app by app id
 		modelApp := AppList[int64(v)]
 		res = append(res, &services.Application{
 			ApplicationId: int64(modelApp.ApplicationId),

@@ -21,7 +21,7 @@ func getDns() string {
 
 func InitDataBase() error {
 	dns := getDns()
-	log.Println(dns)
+	log.Println("Init database now, DNS is", dns)
 
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       dns,   // DSN data source name
@@ -51,6 +51,8 @@ func InitDataBase() error {
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	DB = db
+
+	log.Println("Init database successfully")
 	return nil
 	//migration()
 }

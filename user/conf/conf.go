@@ -1,14 +1,27 @@
 package conf
 
 import (
+	"io/ioutil"
 	"log"
 
-	"gopkg.in/ini.v1"
+	"gopkg.in/yaml.v2"
 )
 
 const (
-	configFilePath = "/home/mozezhao/oa-review/user/conf/config.ini"
+	configFilePath = "/home/mozezhao/oa-review/user/conf/config.yaml"
 )
+
+type Config struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Dbname   string `yaml:"dbname"`
+}
+
+type ConfigData struct {
+	MysqlData Config `yaml:"mysql"`
+}
 
 var (
 	Username string
@@ -18,21 +31,34 @@ var (
 	Dbname   string
 )
 
-func loadConfigData(iniFile *ini.File) {
-	Username = iniFile.Section("mysql").Key("username").String()
-	Password = iniFile.Section("mysql").Key("password").String()
-	Host = iniFile.Section("mysql").Key("host").String()
-	Port = iniFile.Section("mysql").Key("port").String()
-	Dbname = iniFile.Section("mysql").Key("dbname").String()
+var configData ConfigData
+
+func loadConfigData() {
+	config := configData.MysqlData
+
+    // read data 
+	Username = config.Username
+	Password = config.Password
+	Host = config.Host
+	Port = config.Port
+	Dbname = config.Dbname
+	log.Println("loading config data successfully")
+	log.Println("Config data", Username, Password, Host, Port, Dbname)
 }
 
 func init() {
-	// read config file
-	iniFile, err := ini.Load(configFilePath)
+	log.Println("Reading database config file")
+	yamlFile, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		log.Printf("Error on read config file: %v\n", err)
+		log.Printf("Error on reading yaml file: %v\n", err)
 		return
 	}
+	configData = ConfigData{MysqlData: Config{}}
 
-	loadConfigData(iniFile)
+	err = yaml.Unmarshal(yamlFile, &configData)
+	if err != nil {
+		log.Printf("Error on unmrashal yaml file: %v\n", err)
+		return
+	}
+	loadConfigData()
 }

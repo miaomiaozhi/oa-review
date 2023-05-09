@@ -12,7 +12,7 @@ var AppList map[int64]*model.Application
 var UserMapping map[int64]int32
 
 func init() {
-	log.Println("init user server tmp cache")
+	log.Println("Init user server tmp cache")
 	Users = make(map[int64]*model.User)
 	Reviewers = make(map[int64]*model.Reviewer)
 	AppList = make(map[int64]*model.Application)
