@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	pb "oa-review/gateway/services"
+	pb "oa-review/proto/services"
 
 	"github.com/kataras/iris/v12"
 )

@@ -2,8 +2,8 @@ package rpcserver
 
 import (
 	"context"
+	services "oa-review/proto/services"
 	"oa-review/user/model"
-	services "oa-review/user/services"
 )
 
 /*
@@ -18,24 +18,43 @@ func (userService *UserService) SubmitReview(ctx context.Context, req *services.
 		}, nil
 	}
 	if req.UserId < 0 {
-		return ErrResponse("user id illegal")
+		return ErrResponse("reviewer id illegal")
 	}
-	// DAO find usr by id
-	if _, userExist := Users[req.UserId]; !userExist {
-		return ErrResponse("user not find")
+	// // DAO find usr by id
+	// if _, userExist := Users[req.UserId]; !userExist {
+	// 	return ErrResponse("user not find")
+	// }
+	exist, err := model.NewReviewerDaoInstance().CheckReviewerExist(req.UserId)
+	if err != nil {
+		return ErrResponse(err.Error())
 	}
-	// DAO find app by id
-	if _, appExist := AppList[req.ApplicationId]; !appExist {
-		return ErrResponse("app not find")
+	if !exist {
+		return ErrResponse("reviewer not found")
+	}
+	exist, err = model.NewApplicationDaoInstance().CheckApplicationExist(req.ApplicationId)
+	if err != nil {
+		return ErrResponse(err.Error())
+	}
+	if !exist {
+		return ErrResponse("app not found")
 	}
 
-	// 如果是一个有效状态
-	// DAO find app exist
-	_, already := AppList[req.ApplicationId].ApprovedReviewer[req.UserId]
+	application, _ := model.NewApplicationDaoInstance().FindApplicationById(req.ApplicationId)
+
+	// // // 如果是一个有效状态
+	// // DAO find app exist
+	// _, already := AppList[req.ApplicationId].ApprovedReviewer[req.UserId]
+	// if req.ReviewStatus && !already || !req.ReviewStatus && already {
+	// 	// DAO updata reviewer
+	// 	Reviewers[req.UserId].Options = append(Reviewers[req.UserId].Options, &model.ReviewOption{
+	// 		ApplicationId: req.ApplicationId,
+	// 		ReviewStatus:  req.ReviewStatus,
+	// 	})
+	// }
+	_, already := application.ApprovedReviewer[req.UserId]
 	if req.ReviewStatus && !already || !req.ReviewStatus && already {
-		// DAO updata reviewer
-		Reviewers[req.UserId].Options = append(Reviewers[req.UserId].Options, &model.ReviewOption{
-			ApplicationId: req.ApplicationId,
+		model.NewReviewerDaoInstance().AddReviewerOption(req.UserId, &model.ReviewOption{
+			ApplicationId: application.ApplicationId,
 			ReviewStatus:  req.ReviewStatus,
 		})
 	}
@@ -43,14 +62,16 @@ func (userService *UserService) SubmitReview(ctx context.Context, req *services.
 	// updata sql data app
 	if req.ReviewStatus {
 		// DAO update app
-		AppList[req.ApplicationId].ApprovedReviewer[req.UserId] = true
+		// AppList[req.ApplicationId].ApprovedReviewer[req.UserId] = true
+		model.NewApplicationDaoInstance().UpdateApprovedReviewerForApplication(req.ApplicationId, req.UserId, true)
 	} else {
 		// DAO update app
-		delete(AppList[req.ApplicationId].ApprovedReviewer, req.UserId)
+		// delete(AppList[req.ApplicationId].ApprovedReviewer, req.UserId)
+		model.NewApplicationDaoInstance().UpdateApprovedReviewerForApplication(req.ApplicationId, req.UserId, false)
 	}
 	// DAO update app
-	AppList[req.ApplicationId].ReviewStatus = (len(AppList[req.ApplicationId].ApprovedReviewer) == len(Reviewers))
-
+	// AppList[req.ApplicationId].ReviewStatus = (len(AppList[req.ApplicationId].ApprovedReviewer) == len(Reviewers))
+	model.NewApplicationDaoInstance().UpdateReviewStatusForApplication(req.ApplicationId)
 	return &services.UserSubmitReviewResponse{
 		StatusCode: 200,
 		StatusMsg:  "ok",
@@ -67,29 +88,40 @@ func (*UserService) WithdrawReview(ctx context.Context, req *services.UserWithdr
 	if req.UserId < 0 {
 		return ErrResponse("user id illegal")
 	}
-	// DAO find reviewer by id
-	if _, userExist := Reviewers[req.UserId]; !userExist {
-		return ErrResponse("user not find")
+
+	exist, err := model.NewReviewerDaoInstance().CheckReviewerExist(req.UserId)
+	if err != nil {
+		return ErrResponse(err.Error())
+	}
+	if !exist {
+		return ErrResponse("reviewer not found")
 	}
 
-	if len(Reviewers[req.UserId].Options) == 0 {
-		return ErrResponse("error on withdraw review, empty options")
+	option, err := model.NewReviewerDaoInstance().DeleteReviewerOption(req.UserId)
+	if err != nil {
+		return ErrResponse(err.Error())
 	}
+	// if len(Reviewers[req.UserId].Options) == 0 {
+	// 	return ErrResponse("error on withdraw review, empty options")
+	// }
 
-	optLen := len(Reviewers[req.UserId].Options)
-	option := Reviewers[req.UserId].Options[optLen-1]
+	// optLen := len(Reviewers[req.UserId].Options)
+	// option := Reviewers[req.UserId].Options[optLen-1]
 
-	// 删除最后一个操作
-	Reviewers[req.UserId].Options = Reviewers[req.UserId].Options[:optLen-1]
+	// // 删除最后一个操作
+	// Reviewers[req.UserId].Options = Reviewers[req.UserId].Options[:optLen-1]
 
 	// DAO updata reviewer app
 	appId, sta := option.ApplicationId, option.ReviewStatus
 	if sta {
-		delete(AppList[appId].ApprovedReviewer, req.UserId)
+		// delete(AppList[appId].ApprovedReviewer, req.UserId)
+		model.NewApplicationDaoInstance().UpdateApprovedReviewerForApplication(appId, req.UserId, false)
 	} else {
-		AppList[appId].ApprovedReviewer[req.UserId] = true
+		model.NewApplicationDaoInstance().UpdateApprovedReviewerForApplication(appId, req.UserId, true)
+		// AppList[appId].ApprovedReviewer[req.UserId] = true
 	}
-	AppList[appId].ReviewStatus = (len(AppList[appId].ApprovedReviewer) == len(Reviewers))
+	model.NewApplicationDaoInstance().UpdateReviewStatusForApplication(appId)
+	// AppList[appId].ReviewStatus = (len(AppList[appId].ApprovedReviewer) == len(Reviewers))
 
 	return &services.UserWithdrawReviewResponse{
 		StatusCode: 200,

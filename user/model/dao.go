@@ -35,20 +35,3 @@ func NewApplicationDaoInstance() *ApplicationDao {
 	})
 	return applicationDao
 }
-
-/*
-TODO
-mysql handler:
-
-CreateUser(user) (int64, err)
-FindUserByUserId(user id) (*User, err)
-UpdateUserInfo(user) (err)
-
-CreateReviewer(reviewer) (int64, err)
-FindReviewerByUserId(user id) (*Reviewer, err)
-UpdataReviewer(reviewer) (err)
-
-CreateApplication(appli) (int64, err)
-FindApplicationById(app id) (*App, err)
-UpdateApplication(app) (err)
-*/

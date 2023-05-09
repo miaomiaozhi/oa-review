@@ -52,7 +52,33 @@ func InitDataBase() error {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	DB = db
 
+	// migrate
+	if err := migration(); err != nil {
+		return err
+	}
+
 	log.Println("Init database successfully")
 	return nil
-	//migration()
+}
+
+func migration() error {
+	if !DB.Migrator().HasTable(&User{}) {
+		if err := DB.Migrator().CreateTable(&User{}); err != nil {
+			log.Printf("Error on migrate table user: %v", err)
+			return err
+		}
+	}
+	if !DB.Migrator().HasTable(&Reviewer{}) {
+		if err := DB.Migrator().CreateTable(&Reviewer{}); err != nil {
+			log.Printf("Error on migrate table reviewer: %v", err)
+			return err
+		}
+	}
+	if !DB.Migrator().HasTable(&Application{}) {
+		if err := DB.Migrator().CreateTable(&Application{}); err != nil {
+			log.Printf("Error on migrate table Application: %v", err)
+			return err
+		}
+	}
+	return nil
 }

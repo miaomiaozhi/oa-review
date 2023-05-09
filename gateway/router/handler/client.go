@@ -3,7 +3,7 @@ package handler
 import (
 	"log"
 
-	pb "oa-review/gateway/services"
+	pb "oa-review/proto/services"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

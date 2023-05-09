@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net"
+	pb "oa-review/proto/services"
 	_ "oa-review/user/conf"
 	"oa-review/user/model"
 	server "oa-review/user/rpc_server"
-	pb "oa-review/user/services"
 
 	"google.golang.org/grpc"
 )
