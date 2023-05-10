@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	conf "oa-review/conf"
+	model "oa-review/models"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -69,20 +70,20 @@ func InitDataBase() error {
 }
 
 func migration() error {
-	if !DB.Migrator().HasTable(&User{}) {
-		if err := DB.Migrator().CreateTable(&User{}); err != nil {
+	if !DB.Migrator().HasTable(&model.User{}) {
+		if err := DB.Migrator().CreateTable(&model.User{}); err != nil {
 			log.Printf("Error on migrate table user: %v", err)
 			return err
 		}
 	}
-	if !DB.Migrator().HasTable(&Reviewer{}) {
-		if err := DB.Migrator().CreateTable(&Reviewer{}); err != nil {
+	if !DB.Migrator().HasTable(&model.Reviewer{}) {
+		if err := DB.Migrator().CreateTable(&model.Reviewer{}); err != nil {
 			log.Printf("Error on migrate table reviewer: %v", err)
 			return err
 		}
 	}
-	if !DB.Migrator().HasTable(&Application{}) {
-		if err := DB.Migrator().CreateTable(&Application{}); err != nil {
+	if !DB.Migrator().HasTable(&model.Application{}) {
+		if err := DB.Migrator().CreateTable(&model.Application{}); err != nil {
 			log.Printf("Error on migrate table Application: %v", err)
 			return err
 		}

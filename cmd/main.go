@@ -1,7 +1,7 @@
 package main
 
 import (
-	router "oa-review/router/cmd"
+	router "oa-review/routers/cmd"
 )
 
 func main() {

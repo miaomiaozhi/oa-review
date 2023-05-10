@@ -5,6 +5,7 @@ import (
 	"fmt"
 	dao "oa-review/dao"
 	middleware "oa-review/middleware"
+	model "oa-review/models"
 	services "oa-review/proto/services"
 	"strconv"
 	"time"
@@ -75,7 +76,7 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 	}
 
 	// 普通用户注册
-	user := dao.User{
+	user := model.User{
 		UserId:       userId,
 		Password:     req.UserPassword,
 		Name:         req.UserName,
@@ -95,11 +96,11 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 
 	// 审核人注册 DAO create reviewer
 	if user.Priority > 0 {
-		reviewer := dao.Reviewer{
+		reviewer := model.Reviewer{
 			ReviewerId:   user.UserId,
 			Name:         user.Name,
 			Applications: user.Applications,
-			Options:      make([]*dao.ReviewOption, 0),
+			Options:      make([]*model.ReviewOption, 0),
 			Priority:     user.Priority,
 			CreatedAt:    user.CreatedAt,
 		}
@@ -186,7 +187,7 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
-	app := &dao.Application{
+	app := &model.Application{
 		ApplicationId:    appTableSize + 1,
 		Context:          req.ApplicationContext,
 		ReviewStatus:     false,
@@ -246,7 +247,7 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 
 // internal api
 // 数据库中的 user 里只有 app ID List 因此要转换一下
-func daoUserToServicesUser(user *dao.User) (*services.User, error) {
+func daoUserToServicesUser(user *model.User) (*services.User, error) {
 	applications, err := appIdListToApp(user.Applications)
 	if err != nil {
 		return nil, err

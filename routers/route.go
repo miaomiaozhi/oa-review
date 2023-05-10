@@ -1,14 +1,12 @@
 package router
 
 import (
-	handler "oa-review/router/handler"
+	handler "oa-review/routers/handler"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 )
-
-// TODO add jwt midware
 
 func NewRouter() *iris.Application {
 	r := iris.New()

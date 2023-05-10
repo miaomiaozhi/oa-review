@@ -5,6 +5,7 @@ import (
 	"fmt"
 	dao "oa-review/dao"
 	middleware "oa-review/middleware"
+	model "oa-review/models"
 	services "oa-review/proto/services"
 )
 
@@ -30,7 +31,7 @@ func (userService *UserService) SubmitReview(ctx context.Context, req *services.
 	application, _ := dao.NewApplicationDaoInstance().FindApplicationById(req.ApplicationId)
 	_, already := application.ApprovedReviewer[req.UserId]
 	if req.ReviewStatus && !already || !req.ReviewStatus && already {
-		dao.NewReviewerDaoInstance().AddReviewerOption(req.UserId, &dao.ReviewOption{
+		dao.NewReviewerDaoInstance().AddReviewerOption(req.UserId, &model.ReviewOption{
 			ApplicationId: application.ApplicationId,
 			ReviewStatus:  req.ReviewStatus,
 		})

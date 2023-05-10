@@ -2,7 +2,7 @@ package cmd
 
 import (
 	_ "oa-review/dao"
-	"oa-review/router"
+	router "oa-review/routers"
 )
 
 func Run() {
