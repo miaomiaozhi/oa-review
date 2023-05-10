@@ -1,9 +1,9 @@
-package model
+package dao
 
 import (
 	"fmt"
 	"log"
-	conf "oa-review/user/conf"
+	conf "oa-review/conf"
 	"time"
 
 	"gorm.io/driver/mysql"

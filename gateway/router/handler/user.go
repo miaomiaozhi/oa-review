@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"log"
 	pb "oa-review/proto/services"
@@ -16,7 +15,7 @@ func Login(ctx iris.Context) {
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.Login(context.Background(), req)
+	resp, err := C.userClient.Login(ctx, req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
@@ -32,7 +31,7 @@ func Register(ctx iris.Context) {
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.Register(context.Background(), req)
+	resp, err := C.userClient.Register(ctx, req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
@@ -43,22 +42,18 @@ func Register(ctx iris.Context) {
 
 func GetInfo(ctx iris.Context) {
 	req := &pb.UserGetInfoRequest{}
-	// log.Println("to here 0")
-
 	if err := ctx.ReadJSON(req); err != nil {
 		log.Printf("Error on user get info: %v\n", err)
 		ctx.StatusCode(iris.StatusBadRequest)
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	// log.Println("to here 1")
-	resp, err := C.userClient.GetInfo(context.Background(), req)
+	resp, err := C.userClient.GetInfo(ctx, req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
 		return
 	}
-	// log.Println("to here 2")
 	ctx.JSON(resp)
 }
 
@@ -71,7 +66,7 @@ func Submit(ctx iris.Context) {
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.SubmitApplication(context.Background(), req)
+	resp, err := C.userClient.SubmitApplication(ctx, req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
@@ -89,7 +84,7 @@ func Retrieval(ctx iris.Context) {
 		ctx.WriteString(fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.RetrievalApplication(context.Background(), req)
+	resp, err := C.userClient.RetrievalApplication(ctx, req)
 	if err != nil {
 		ctx.StatusCode(iris.StatusInternalServerError)
 		ctx.WriteString(fmt.Sprintf("Error on connect client:%v", err.Error()))
@@ -104,7 +99,7 @@ func SubmitReview(ctx iris.Context) {
 		errResponse(ctx, fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.SubmitReview(context.Background(), req)
+	resp, err := C.userClient.SubmitReview(ctx, req)
 	if err != nil {
 		errResponse(ctx, fmt.Sprintf("Error on connect client:%v", err.Error()))
 		return
@@ -118,7 +113,7 @@ func WithdrawReview(ctx iris.Context) {
 		errResponse(ctx, fmt.Sprintf("Error on read:%v", err.Error()))
 		return
 	}
-	resp, err := C.userClient.WithdrawReview(context.Background(), req)
+	resp, err := C.userClient.WithdrawReview(ctx, req)
 	if err != nil {
 		errResponse(ctx, fmt.Sprintf("Error on connect client:%v", err.Error()))
 		return

@@ -1,4 +1,5 @@
-package model // Application info
+package dao
+
 import (
 	"database/sql/driver"
 	"encoding/json"
@@ -8,6 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Application info
 type ApproverMap map[int64]bool
 
 func (t *ApproverMap) Scan(value interface{}) error {

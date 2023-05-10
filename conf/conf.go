@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	configFilePath = "/home/mozezhao/oa-review/user/conf/config.yaml"
+	configFilePath = "/home/mozezhao/oa-review/conf/config.yaml"
 )
 
 type Config struct {
@@ -36,7 +36,7 @@ var configData ConfigData
 func loadConfigData() {
 	config := configData.MysqlData
 
-    // read data 
+	// read data
 	Username = config.Username
 	Password = config.Password
 	Host = config.Host

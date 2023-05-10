@@ -1,33 +1,44 @@
 package router
 
 import (
+	pkg "oa-review/gateway/pkg"
 	"oa-review/gateway/router/handler"
 
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/middleware/logger"
+	"github.com/kataras/iris/v12/middleware/recover"
 )
+
+// TODO add jwt midware
 
 func NewRouter() *iris.Application {
 	r := iris.New()
+
+	// midware
+	loadMidware(r)
+
 	userApi := r.Party("/user")
 	{
-		// midware
-		userApi.Use(iris.Compression)
-		// get info
-		userApi.Get("/info", handler.GetInfo)
 		// login
 		userApi.Post("/login", handler.Login)
 		// register
 		userApi.Post("/register", handler.Register)
-		// submit
-		userApi.Post("/submit", handler.Submit)
-		// retrieval application
-		userApi.Get("/retrieval", handler.Retrieval)
+	}
 
-		// User review need auth
+	// User api need auth
+	userAuthorizeApi := r.Party("/user", pkg.Authorize)
+	{
+		// get info
+		userAuthorizeApi.Get("/info", handler.GetInfo)
+		// submit application
+		userAuthorizeApi.Post("/submit", handler.Submit)
+		// retrieval application
+		userAuthorizeApi.Get("/retrieval", handler.Retrieval)
+
 		// submit review
-		userApi.Post("/review/submit", handler.SubmitReview)
+		userAuthorizeApi.Post("/review/submit", handler.SubmitReview)
 		// withdraw review
-		userApi.Post("/review/withdraw", handler.WithdrawReview)
+		userAuthorizeApi.Post("/review/withdraw", handler.WithdrawReview)
 	}
 
 	// test connect
@@ -38,4 +49,10 @@ func NewRouter() *iris.Application {
 		})
 	})
 	return r
+}
+
+func loadMidware(r *iris.Application) {
+	r.Use(iris.Compression)
+	r.Use(recover.New())
+	r.Use(logger.New())
 }

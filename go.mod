@@ -3,6 +3,7 @@ module oa-review
 go 1.20
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/protobuf v1.5.3
 	github.com/kataras/iris/v12 v12.2.0
 	google.golang.org/grpc v1.55.0
@@ -11,7 +12,10 @@ require (
 	gorm.io/gorm v1.25.0
 )
 
-require gopkg.in/ini.v1 v1.67.0 // indirect
+require (
+	github.com/sergi/go-diff v1.1.0 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
+)
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
@@ -43,7 +47,6 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.23 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
-	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tdewolff/minify/v2 v2.12.4 // indirect
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
