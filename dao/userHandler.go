@@ -78,7 +78,7 @@ func (*UserDao) CheckUserExist(userId int64) (bool, error) {
 	var user User
 	res := DB.Where("user_id = ?", userId).First(&user)
 	if res.Error != nil {
-		if res.Error.Error() != "record not found" {
+		if res.Error.Error() == "record not found" {
 			log.Printf("Error on check user exist: %v\n", res.Error.Error())
 			return false, nil
 		}

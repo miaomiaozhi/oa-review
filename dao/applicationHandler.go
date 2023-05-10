@@ -106,7 +106,7 @@ func (*ApplicationDao) CheckApplicationExist(ApplicationId int64) (bool, error) 
 	var Application Application
 	res := DB.Where("application_id = ?", ApplicationId).First(&Application)
 	if res.Error != nil {
-		if res.Error.Error() != "record not found" {
+		if res.Error.Error() == "record not found" {
 			log.Printf("Error on check Application exist: %v\n", res.Error.Error())
 			return false, nil
 		}

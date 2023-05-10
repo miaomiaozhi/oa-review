@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net"
+	_ "oa-review/conf"
+	_ "oa-review/dao"
 	pb "oa-review/proto/services"
 	server "oa-review/user/rpc_server"
 

@@ -1,8 +1,7 @@
 package router
 
 import (
-	pkg "oa-review/gateway/pkg"
-	"oa-review/gateway/router/handler"
+	handler "oa-review/router/handler"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
@@ -25,8 +24,8 @@ func NewRouter() *iris.Application {
 		userApi.Post("/register", handler.Register)
 	}
 
-	// User api need auth
-	userAuthorizeApi := r.Party("/user", pkg.Authorize)
+	// User api need authorize
+	userAuthorizeApi := r.Party("/user")
 	{
 		// get info
 		userAuthorizeApi.Get("/info", handler.GetInfo)
@@ -35,10 +34,15 @@ func NewRouter() *iris.Application {
 		// retrieval application
 		userAuthorizeApi.Get("/retrieval", handler.Retrieval)
 
+	}
+
+	// Reviewer api need authorize
+	reviewerAuthorizeApi := r.Party("/user/review")
+	{
 		// submit review
-		userAuthorizeApi.Post("/review/submit", handler.SubmitReview)
+		reviewerAuthorizeApi.Post("/submit", handler.SubmitReview)
 		// withdraw review
-		userAuthorizeApi.Post("/review/withdraw", handler.WithdrawReview)
+		reviewerAuthorizeApi.Post("/withdraw", handler.WithdrawReview)
 	}
 
 	// test connect

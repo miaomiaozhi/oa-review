@@ -100,7 +100,7 @@ func (*ReviewerDao) CheckReviewerExist(ReviewerId int64) (bool, error) {
 	var Reviewer Reviewer
 	res := DB.Where("reviewer_id = ?", ReviewerId).First(&Reviewer)
 	if res.Error != nil {
-		if res.Error.Error() != "record not found" {
+		if res.Error.Error() == "record not found" {
 			log.Printf("Error on check Reviewer exist: %v\n", res.Error.Error())
 			return false, nil
 		}

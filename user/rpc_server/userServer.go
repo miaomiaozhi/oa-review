@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	dao "oa-review/dao"
+	middleware "oa-review/middleware"
 	services "oa-review/proto/services"
 	"strconv"
 	"time"
@@ -13,14 +14,8 @@ type UserService struct {
 	services.UnimplementedUserServiceServer
 }
 
-// TODO jwt
-
 /*
-req:
-UserId string
-UserPassword string
-rep
-*/
+ */
 func (userService *UserService) Login(ctx context.Context, req *services.UserLoginRequest) (*services.UserLoginResponse, error) {
 	ErrResponse := func(errorMsg string) (*services.UserLoginResponse, error) {
 		return &services.UserLoginResponse{
@@ -29,25 +24,31 @@ func (userService *UserService) Login(ctx context.Context, req *services.UserLog
 			Token:      "",
 		}, nil
 	}
+
 	userIdStr, userPsw := req.UserId, req.UserPassword
 
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if userIdStr == "" || userPsw == "" || err != nil {
-		return ErrResponse("error login user fmt")
+		return ErrResponse("error login user format")
 	}
 
 	user, err := dao.NewUserDaoInstance().FindUserByUserId(userId)
 	if err != nil {
-		return ErrResponse(err.Error())
+		return ErrResponse(fmt.Sprintf("error on find user by user id: %v", err.Error()))
 	}
 	if user.Password != userPsw {
 		return ErrResponse("password incorect")
 	}
 
+	jwtToken, err := middleware.CreateUserJwtToken(userId, user.Priority)
+	if err != nil {
+		return ErrResponse(fmt.Sprintf("error on create user Jwt token: %v", err.Error()))
+	}
+
 	return &services.UserLoginResponse{
 		StatusCode: 200,
 		StatusMsg:  fmt.Sprintf("user id :%v, app size :%v", user.UserId, len(user.Applications)),
-		Token:      "jwt token",
+		Token:      jwtToken,
 	}, nil
 }
 
@@ -59,12 +60,14 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 		return &services.UserRegisterResponse{
 			StatusCode: 400,
 			StatusMsg:  errorMsg,
-			Token:      "",
 		}, nil
 	}
 
 	if req.UserId == "" || req.UserPassword == "" || req.UserName == "" {
 		return ErrResponse("user id and user password can not be empty")
+	}
+	if req.Priority < 0 {
+		return ErrResponse("priority illegal")
 	}
 	userId, err := strconv.ParseInt(req.UserId, 10, 64)
 	if err != nil {
@@ -100,7 +103,9 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 			Priority:     user.Priority,
 			CreatedAt:    user.CreatedAt,
 		}
-		dao.NewReviewerDaoInstance().CreateReviewer(&reviewer)
+		if _, err := dao.NewReviewerDaoInstance().CreateReviewer(&reviewer); err != nil {
+			return ErrResponse("Error on create reviewer" + err.Error())
+		}
 	}
 
 	// // DAO create user
@@ -109,12 +114,11 @@ func (userService *UserService) Register(ctx context.Context, req *services.User
 	user.UserId = userId
 	_, err = dao.NewUserDaoInstance().CreateUser(&user)
 	if err != nil {
-		return ErrResponse(err.Error())
+		return ErrResponse("Error on create user" + err.Error())
 	}
 	return &services.UserRegisterResponse{
 		StatusCode: 200,
 		StatusMsg:  "register successfully",
-		Token:      "",
 	}, nil
 }
 
@@ -132,22 +136,24 @@ func (userService *UserService) GetInfo(ctx context.Context, req *services.UserG
 			User:       nil,
 		}, nil
 	}
-	if req.UserId < 0 || req.UserPassword == "" {
-		return ErrResponse("user id and user password can not be empty")
-	}
-	user, err := dao.NewUserDaoInstance().FindUserByUserId(req.UserId)
+	// 用户鉴权
+	tokenId, _, err := middleware.UserAuthorize(req.Token)
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
-	if user.Password != req.UserPassword {
-		return ErrResponse("password incorect")
+	if tokenId != req.UserId {
+		return ErrResponse("no authorization to get user info")
+	}
+
+	user, err := dao.NewUserDaoInstance().FindUserByUserId(req.UserId)
+	if err != nil {
+		return ErrResponse(err.Error())
 	}
 
 	servicesUser, err := daoUserToServicesUser(user)
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
-	// user = *dao.daoUserToServicesUser(Users[userIdx])
 	return &services.UserGetInfoResponse{
 		StatusCode: 200,
 		StatusMsg:  fmt.Sprintf("user id :%v, welcome login", req.UserId),
@@ -165,16 +171,14 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 			StatusMsg:  errorMsg,
 		}, nil
 	}
-	if req.UserId < 0 {
-		return ErrResponse("user id and user password can not be empty")
-	}
 
-	exist, err := dao.NewUserDaoInstance().CheckUserExist(req.UserId)
+	// 用户鉴权
+	tokenId, _, err := middleware.UserAuthorize(req.Token)
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
-	if !exist {
-		return ErrResponse("user not found")
+	if tokenId != req.UserId {
+		return ErrResponse("no authorization to submit application")
 	}
 
 	// 新建申请
@@ -192,15 +196,10 @@ func (userService *UserService) SubmitApplication(ctx context.Context, req *serv
 
 	// 将 请求加入用户的请求列表
 	userId := req.UserId
-	// // DAO find user/ updata info
-	// Users[userId].Applications = append(Users[userId].Applications, app.ApplicationId)
 	if err := dao.NewUserDaoInstance().AddApplicationForUser(userId, app.ApplicationId); err != nil {
 		return ErrResponse(err.Error())
 	}
 
-	// // 将请求加入 数据库
-	// // DAO create app
-	// AppList[app.ApplicationId] = app
 	if _, err := dao.NewApplicationDaoInstance().CreateApplication(app); err != nil {
 		return ErrResponse(err.Error())
 	}
@@ -221,16 +220,20 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 		}, nil
 	}
 
-	// // DAO find usr by id
-	// // 查询实体之后 直接操作
-	// if _, ok := Users[req.UserId]; !ok {
-	// 	return ErrResponse("user not find")
-	// }
+	// 用户鉴权
+	tokenId, _, err := middleware.UserAuthorize(req.Token)
+	if err != nil {
+		return ErrResponse(err.Error())
+	}
+	if tokenId != req.UserId {
+		return ErrResponse("no authorization to retrival application")
+	}
+
 	user, err := dao.NewUserDaoInstance().FindUserByUserId(req.UserId)
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
-	res, err := AppIdListToApp(user.Applications)
+	res, err := appIdListToApp(user.Applications)
 	if err != nil {
 		return ErrResponse(err.Error())
 	}
@@ -241,22 +244,10 @@ func (userService *UserService) RetrievalApplication(ctx context.Context, req *s
 	}, nil
 }
 
-// userful api
-func daoAppToServicesApp(apps []*dao.Application) []*services.Application {
-	res := make([]*services.Application, 0)
-	for _, v := range apps {
-		res = append(res, &services.Application{
-			ApplicationId: v.ApplicationId,
-			Context:       v.Context,
-			ReviewStatus:  v.ReviewStatus,
-		})
-	}
-	return res
-}
-
+// internal api
 // 数据库中的 user 里只有 app ID List 因此要转换一下
 func daoUserToServicesUser(user *dao.User) (*services.User, error) {
-	applications, err := AppIdListToApp(user.Applications)
+	applications, err := appIdListToApp(user.Applications)
 	if err != nil {
 		return nil, err
 	}
@@ -268,12 +259,9 @@ func daoUserToServicesUser(user *dao.User) (*services.User, error) {
 	return &res, nil
 }
 
-func AppIdListToApp(appIdList []int64) ([]*services.Application, error) {
+func appIdListToApp(appIdList []int64) ([]*services.Application, error) {
 	res := make([]*services.Application, 0)
 	for _, v := range appIdList {
-		// TODO: DAO
-		// find app by app id
-		// daoApp := AppList[int64(v)]
 		daoApp, err := dao.NewApplicationDaoInstance().FindApplicationById(int64(v))
 		if err != nil {
 			return nil, err

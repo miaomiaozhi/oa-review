@@ -1,6 +1,9 @@
 package cmd
 
-import "oa-review/gateway/router"
+import (
+	_ "oa-review/dao"
+	"oa-review/router"
+)
 
 func Run() {
 	r := router.NewRouter()

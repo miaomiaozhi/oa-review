@@ -12,6 +12,13 @@ import (
 
 var DB *gorm.DB
 
+func init() {
+	err := InitDataBase()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func getDns() string {
 	// "gorm:gorm@tcp(127.0.0.1:3306)/gorm?charset=utf8&parseTime=True&loc=Local", // DSN data source name
 	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
