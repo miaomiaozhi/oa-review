@@ -6,7 +6,7 @@ import (
 	_ "oa-review/conf"
 	_ "oa-review/dao"
 	pb "oa-review/proto/services"
-	server "oa-review/user/rpc_server"
+	server "oa-review/controllers/user/rpc_server"
 
 	"google.golang.org/grpc"
 )

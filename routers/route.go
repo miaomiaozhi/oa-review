@@ -50,6 +50,14 @@ func NewRouter() *iris.Application {
 			"message": "ok",
 		})
 	})
+
+	// test reverse proxy
+	// TODO: delete
+	r.Get("/test", func(ctx iris.Context) {
+		ctx.JSON(iris.Map{
+			"message": "reverse proxy!",
+		})
+	})
 	return r
 }
 

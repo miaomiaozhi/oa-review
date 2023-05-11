@@ -3,12 +3,14 @@ package conf
 import (
 	"io/ioutil"
 	"log"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	configFilePath = "/home/mozezhao/oa-review/conf/config.yaml"
+	// oa-review
+	configFilePath = "/conf/config.yaml"
 )
 
 type Config struct {
@@ -48,7 +50,27 @@ func loadConfigData() {
 
 func init() {
 	log.Println("Reading database config file")
-	yamlFile, err := ioutil.ReadFile(configFilePath)
+
+	dirPath, err := os.Getwd()
+	log.Println("dirPath is", dirPath)
+	if err != nil {
+		log.Printf("Error on reading yaml file: %v\n", err)
+		return
+	}
+	// yamlFile, err := ioutil.ReadFile(configFilePath)
+	yamlFileHandle, err := os.Open(dirPath + "/" + configFilePath)
+	if err != nil {
+		log.Printf("Error on reading yaml file: %v\n", err)
+		return
+	}
+	defer yamlFileHandle.Close()
+
+	// 读取配置文件内容
+	yamlFile, err := ioutil.ReadAll(yamlFileHandle)
+	if err != nil {
+		log.Printf("Error on reading yaml file: %v\n", err)
+		return
+	}
 	if err != nil {
 		log.Printf("Error on reading yaml file: %v\n", err)
 		return
