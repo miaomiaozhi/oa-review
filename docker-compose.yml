@@ -6,16 +6,26 @@ services:
       - "8080:8080"
     depends_on:
       - db
+    networks:
+      - oa-review-net
   db:
     image: mysql
     environment:
       MYSQL_DATABASE: oa-review
-      MYSQL_USER: root
-      MYSQL_PASSWORD: mozezhao
+      # MYSQL_USER: root
+      # MYSQL_PASSWORD: mozezhao
+      MYSQL_ROOT_USER: root
       MYSQL_ROOT_PASSWORD: mozezhao
+      MYSQL_ROOT_HOST: localhost
     volumes:
       - db_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - oa-review-net
 volumes:
   db_data:
+networks:
+  oa-review-net:
+    external: true
+    name: oa-review-net

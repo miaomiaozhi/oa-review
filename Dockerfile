@@ -1,29 +1,35 @@
-# 多阶段构建 构建 oa-review 
-# 使用 golang:latest 作为基础镜像
+# 多阶段构建 构建 oa-review
 FROM golang AS builder
-# 在容器内创建一个名为 oa-review/ 的工作目录
 
-COPY . oa-review/
+ENV GOPROXY https://goproxy.cn,direct
+ENV GO111MODULE on
 
-# 构建 oa-review-runner
-RUN cd ./oa-review && \
-    GOPROXY=https://goproxy.cn,direct GOSUMDB=off CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-        go build -trimpath -ldflags "-w -s" -o ./cmd/oa-review-runner ./cmd/main.go
+WORKDIR /oa-review
+COPY ./ /oa-review
 
-# 构建 user-runner
-RUN cd ./oa-review && \
-    GOPROXY=https://goproxy.cn,direct GOSUMDB=off CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-        go build -trimpath -ldflags "-w -s" -o ./cmd/user-runner ./controllers/user/cmd/main.go
+# speed up
+# RUN --mount=type=cache,target=/go,id=hps_bait,sharing=locked \
+#     --mount=type=cache,target=/root/.cache/go-build,id=hps_bait_build,sharing=locked \
+#     go mod tidy && \
+#     go build -o ./cmd/oa-review-runner ./cmd/main.go
 
+RUN go mod tidy && \
+    go build -o ./cmd/oa-review-runner ./cmd/main.go
 
-# 使用 alpine 基础镜像进行运行
-FROM alpine
+RUN pwd && ls
+
+FROM alpine AS runner
 LABEL maintainer="mozezhao <mozezhao@moresec.cn>"
+
 ENV LANG en_US.utf8
 
 WORKDIR /workspace
-COPY --from=builder /go/oa-review/cmd/oa-review-runner /go/oa-review/cmd/user-runner  /workspace/
+
+COPY --from=builder /oa-review/cmd/oa-review-runner /workspace/
 RUN chmod -R 755 /workspace
 
+RUN pwd && ls
+RUN ls -l /workspace/
+
 EXPOSE 8080
-ENTRYPOINT ["./oa-review-runner", "./user-runner"]
+ENTRYPOINT ["./oa-review-runner"]

@@ -58,7 +58,7 @@ func init() {
 		return
 	}
 	// yamlFile, err := ioutil.ReadFile(configFilePath)
-	yamlFileHandle, err := os.Open(dirPath + "/" + configFilePath)
+	yamlFileHandle, err := os.Open(dirPath + configFilePath)
 	if err != nil {
 		log.Printf("Error on reading yaml file: %v\n", err)
 		return
