@@ -2,7 +2,7 @@ package wrapper
 
 import (
 	"encoding/json"
-	mlog "oa-review/logger"
+	logger "oa-review/logger"
 
 	"github.com/kataras/iris/v12"
 )
@@ -21,6 +21,7 @@ type AuthResult struct {
 	UserName    string `json:"user_name"`   //用户名
 }
 
+// Acquire 将 iris 的context转化成自定义的context
 func Acquire(original iris.Context, login bool) *Context {
 	// TODO add context to context pool
 	ctx := &Context{
@@ -42,16 +43,16 @@ func Acquire(original iris.Context, login bool) *Context {
 func GetAutoResult(ctx iris.Context) *AuthResult {
 	user := ctx.GetHeader("User")
 	if user == "" {
-		mlog.Error("header user invalid")
+		logger.Error("header user invalid")
 		return nil
 	}
 	authInfo := &AuthResult{}
 	err := json.Unmarshal([]byte(user), &authInfo)
 	if err != nil {
-		mlog.Error("auth info json unmarshal failed", err.Error())
+		logger.Error("auth info json unmarshal failed", err.Error())
 		return nil
 	}
-	mlog.Debugf("[AUTH_INFO] username: %v", authInfo.UserName)
+	logger.Debugf("[AUTH_INFO] username: %v", authInfo.UserName)
 	return authInfo
 }
 
