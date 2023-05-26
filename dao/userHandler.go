@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"log"
 	"oa-review/db"
 	"oa-review/logger"
 	v1 "oa-review/models/protoreq/v1"
@@ -13,6 +12,7 @@ import (
 */
 func (*UserDao) CreateUser(user *v1.User) (int64, error) {
 	result := db.GetDB().Create(&user)
+	logger.Info("user", user)
 	if result.Error != nil {
 		return -1, result.Error
 	}
@@ -29,7 +29,7 @@ func (*UserDao) FindUserByUserId(id int64) (*v1.User, error) {
 	result := db.GetDB().Where("id = ?", id).First(&user)
 	err := result.Error
 	if err != nil {
-		logger.Info("find user by user id error", result.Error.Error())
+		logger.Error("find user by user id error", result.Error.Error())
 		return nil, err
 	}
 	return &user, nil
@@ -42,24 +42,30 @@ func (*UserDao) AddApplicationForUser(userId int64, appId int64) error {
 	var user v1.User
 	res := db.GetDB().Where("id = ?", userId).First(&user)
 	if res.Error != nil {
-		log.Printf("Error on add app for user: %v\n", res.Error.Error())
+		logger.Errorf("Error on add app for user: %v\n", res.Error.Error())
 		return res.Error
 	}
+	logger.Debug("user before appliacitons", user.Applications)
+
 	user.Applications = append(user.Applications, appId)
+	logger.Debug("user after appliacitons", user.Applications)
 	db.GetDB().Model(&user).UpdateColumn("applications", user.Applications)
+	// db.GetDB().Model(&user).Updates(map[string]interface{}{"applications": user.Applications})
 	return nil
 }
 
 func (*UserDao) CheckUserExist(userId int64) (bool, error) {
 	var user v1.User
-	res := db.GetDB().Where("id = ?", userId).First(&user)
+	res := db.GetDB().Where("id = ?", userId).Limit(1).Find(&user)
+	logger.Debug("user id", userId)
+	logger.Debug(user)
 	if res.Error != nil {
-		if res.Error.Error() == "record not found" {
-			logger.Info("user not found", userId)
-			return false, nil
-		}
-		logger.Info("check user exist error", res.Error.Error())
+		logger.Error("check user exist error", res.Error.Error())
 		return false, res.Error
+	}
+	// 返回 0 值，查找不到
+	if user.Id == 0 {
+		return false, nil
 	}
 	return true, nil
 }
@@ -67,7 +73,7 @@ func (*UserDao) CheckUserExist(userId int64) (bool, error) {
 func (*UserDao) TableSize() (int64, error) {
 	var count int64
 	if err := db.GetDB().Unscoped().Model(&v1.User{}).Count(&count).Error; err != nil {
-		log.Printf("Error on counting user table size: %v\n", err)
+		logger.Errorf("Error on counting user table size: %v\n", err)
 		return 0, err
 	}
 	return count, nil

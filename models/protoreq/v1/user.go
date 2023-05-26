@@ -3,18 +3,28 @@ package v1
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"gorm.io/gorm"
+	"fmt"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Apps []int64
 
-func (t *Apps) Scan(value interface{}) error {
-	bytesValue, _ := value.([]byte)
-	return json.Unmarshal(bytesValue, t)
+func (a *Apps) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Apps")
+	}
+	var ints []int64
+	if err := json.Unmarshal(bytes, &ints); err != nil {
+		return fmt.Errorf("failed to unmarshal Apps")
+	}
+	*a = ints
+	return nil
 }
-func (t *Apps) Value() (driver.Value, error) {
-	return json.Marshal(t)
+func (a Apps) Value() (driver.Value, error) {
+	return json.Marshal(a)
 }
 
 // User info
@@ -22,7 +32,7 @@ type User struct {
 	Id           int64  `gorm:"primary_key"`
 	Password     string `gorm:"default:(-)"`
 	Name         string `gorm:"default:(-)"`
-	Applications Apps   `gorm:"default:(-)"`
+	Applications Apps   `gorm:"type:json;default:(-)"`
 	Priority     int32  `gorm:"default:(-)"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

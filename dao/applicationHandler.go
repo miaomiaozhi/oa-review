@@ -3,6 +3,7 @@ package dao
 import (
 	"log"
 	"oa-review/db"
+	"oa-review/logger"
 	v1 "oa-review/models/protoreq/v1"
 )
 
@@ -26,7 +27,7 @@ func (dao *ApplicationDao) FindApplicationById(appId int64) (*v1.Application, er
 	app := v1.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
-		log.Printf("Error on find app by app_id: %v\n", res.Error.Error())
+		logger.Errorf("Error on find app by app_id: %v\n", res.Error.Error())
 		return nil, res.Error
 	}
 	status, err := dao.UpdateReviewStatusForApplication(appId)
@@ -44,8 +45,8 @@ func (*ApplicationDao) UpdateApprovedReviewerForApplication(appId int64, reviewe
 	app := v1.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
-		log.Printf("Error on update approved revewer for app: %v\n", res.Error.Error())
-		return nil
+		logger.Errorf("Error on update approved revewer for app: %v\n", res.Error.Error())
+		return res.Error
 	}
 
 	if reviewStatus {
@@ -61,7 +62,7 @@ func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, erro
 	app := v1.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
-		log.Printf("Error on update reviewer status for app: %v\n", res.Error.Error())
+		logger.Errorf("Error on update reviewer status for app: %v\n", res.Error.Error())
 		return false, nil
 	}
 	ReviewersCount, err := NewReviewerDaoInstance().TableSize()
@@ -79,13 +80,13 @@ func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, erro
 
 func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
 	var Application v1.Application
-	res := db.GetDB().Where("id = ?", Id).First(&Application)
+	res := db.GetDB().Where("id = ?", Id).Limit(1).Find(&Application)
 	if res.Error != nil {
-		if res.Error.Error() == "record not found" {
-			log.Printf("Error on check Application exist: %v\n", res.Error.Error())
-			return false, nil
-		}
+		logger.Errorf("Error on check Application exist: %v\n", res.Error.Error())
 		return false, res.Error
+	}
+	if Application.Id == 0 {
+		return false, nil
 	}
 	return true, nil
 }

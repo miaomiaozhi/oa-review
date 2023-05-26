@@ -1,7 +1,6 @@
 package db
 
 import (
-	"log"
 	"oa-review/conf"
 	mlog "oa-review/logger"
 	v1 "oa-review/models/protoreq/v1"
@@ -33,19 +32,19 @@ func Migration() error {
 	DB := GetDB()
 	if !DB.Migrator().HasTable(&v1.User{}) {
 		if err := DB.Migrator().CreateTable(&v1.User{}); err != nil {
-			log.Printf("Error on migrate table user: %v", err)
+			mlog.Info("Error on migrate table user:", err.Error())
 			return err
 		}
 	}
 	if !DB.Migrator().HasTable(&v1.Reviewer{}) {
 		if err := DB.Migrator().CreateTable(&v1.Reviewer{}); err != nil {
-			log.Printf("Error on migrate table reviewer: %v", err)
+			mlog.Info("Error on migrate table reviewer:", err.Error())
 			return err
 		}
 	}
 	if !DB.Migrator().HasTable(&v1.Application{}) {
 		if err := DB.Migrator().CreateTable(&v1.Application{}); err != nil {
-			log.Printf("Error on migrate table Application: %v", err)
+			mlog.Info("Error on migrate table application:", err.Error())
 			return err
 		}
 	}

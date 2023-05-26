@@ -15,7 +15,7 @@ func (t *ApproverMap) Scan(value interface{}) error {
 	bytesValue, _ := value.([]byte)
 	return json.Unmarshal(bytesValue, t)
 }
-func (t *ApproverMap) Value() (driver.Value, error) {
+func (t ApproverMap) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }
 
