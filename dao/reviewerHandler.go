@@ -58,7 +58,7 @@ func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*v1.ReviewOption, er
 	}
 	if len(reviewer.Options) == 0 {
 		logger.Error("Error on delete reviewer option: options empty")
-		return nil, fmt.Errorf("Reviewer options empty")
+		return nil, fmt.Errorf("reviewer options empty")
 	}
 	optLen := len(reviewer.Options)
 	opt := reviewer.Options[optLen-1]
