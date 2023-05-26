@@ -12,7 +12,7 @@ import (
 func RegisterHealthRouter(party router.Party) {
 	v1 := party.Party("/health")
 	{
-		v1.Handle(http.MethodGet, "/", wrapper.Handler(v1_controller.HealthController{}.Test))
+		v1.Handle(http.MethodGet, "/", wrapper.HandlerNotLogin(v1_controller.HealthController{}.Test))
 	}
 	logger.Info("register health router success")
 }

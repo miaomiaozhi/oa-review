@@ -3,6 +3,7 @@ package dao
 import (
 	"errors"
 	"log"
+	"oa-review/db"
 	v1 "oa-review/models/protoreq/v1"
 )
 
@@ -11,7 +12,7 @@ import (
 根据用户名和密码，创建一个新的 Reviewer，返回 Reviewer ID
 */
 func (*ReviewerDao) CreateReviewer(reviewer *v1.Reviewer) (int64, error) {
-	result := DB.Create(&reviewer)
+	result := db.GetDB().Create(&reviewer)
 	if result.Error != nil {
 		return -1, result.Error
 	}
@@ -24,7 +25,7 @@ func (*ReviewerDao) CreateReviewer(reviewer *v1.Reviewer) (int64, error) {
 */
 func (*ReviewerDao) FindReviewerById(reviewerId int64) (*v1.Reviewer, error) {
 	reviewer := v1.Reviewer{Id: reviewerId}
-	res := DB.Where("reviewer_id = ?", reviewerId).First(&reviewer)
+	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		log.Printf("Error on find reviewer by id: %v\n", res.Error.Error())
 		return nil, res.Error
@@ -37,19 +38,19 @@ func (*ReviewerDao) FindReviewerById(reviewerId int64) (*v1.Reviewer, error) {
 */
 func (*ReviewerDao) AddReviewerOption(reviewerId int64, option *v1.ReviewOption) error {
 	reviewer := v1.Reviewer{Id: reviewerId}
-	res := DB.Where("reviewer_id = ?", reviewerId).First(&reviewer)
+	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		log.Printf("Error on add reviewer option: %s", res.Error.Error())
 		return res.Error
 	}
 	reviewer.Options = append(reviewer.Options, option)
-	DB.Model(&reviewer).Update("options", reviewer.Options)
+	db.GetDB().Model(&reviewer).Update("options", reviewer.Options)
 	return nil
 }
 
 func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*v1.ReviewOption, error) {
 	reviewer := v1.Reviewer{Id: reviewerId}
-	res := DB.Where("reviewer_id = ?", reviewerId).First(&reviewer)
+	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		log.Printf("Error on delete reviewer option: %s", res.Error.Error())
 		return nil, res.Error
@@ -61,13 +62,13 @@ func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*v1.ReviewOption, er
 	optLen := len(reviewer.Options)
 	opt := reviewer.Options[optLen-1]
 	reviewer.Options = reviewer.Options[:optLen-1]
-	DB.Model(&reviewer).Update("options", reviewer.Options)
+	db.GetDB().Model(&reviewer).Update("options", reviewer.Options)
 	return opt, nil
 }
 
 func (*ReviewerDao) CheckReviewerExist(Id int64) (bool, error) {
 	var Reviewer v1.Reviewer
-	res := DB.Where("reviewer_id = ?", Id).First(&Reviewer)
+	res := db.GetDB().Where("id = ?", Id).First(&Reviewer)
 	if res.Error != nil {
 		if res.Error.Error() == "record not found" {
 			log.Printf("Error on check Reviewer exist: %v\n", res.Error.Error())
@@ -80,7 +81,7 @@ func (*ReviewerDao) CheckReviewerExist(Id int64) (bool, error) {
 
 func (*ReviewerDao) TableSize() (int64, error) {
 	var count int64
-	if err := DB.Unscoped().Model(&v1.Reviewer{}).Count(&count).Error; err != nil {
+	if err := db.GetDB().Unscoped().Model(&v1.Reviewer{}).Count(&count).Error; err != nil {
 		log.Printf("Error on counting reviewer table size: %v\n", err)
 		return 0, err
 	}

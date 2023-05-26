@@ -32,3 +32,16 @@ type User struct {
 func (User) TableName() string {
 	return "tb_user"
 }
+
+// user request
+type UserLoginRequest struct {
+	UserId       string `json:"UserId,omitempty"`       // user id
+	UserPassword string `json:"UserPassword,omitempty"` // user password
+}
+
+type UserRegisterRequest struct {
+	UserId       string `protobuf:"bytes,1,opt,name=UserId,proto3" json:"UserId,omitempty"`
+	UserPassword string `protobuf:"bytes,2,opt,name=UserPassword,proto3" json:"UserPassword,omitempty"`
+	UserName     string `protobuf:"bytes,3,opt,name=UserName,proto3" json:"UserName,omitempty"`
+	Priority     int32  `protobuf:"varint,4,opt,name=Priority,proto3" json:"Priority,omitempty"`
+}

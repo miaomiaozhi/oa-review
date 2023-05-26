@@ -62,24 +62,24 @@ var DB *gorm.DB
 //	return nil
 //}
 //
-//func migration() error {
-//	if !DB.Migrator().HasTable(&v1.User{}) {
-//		if err := DB.Migrator().CreateTable(&v1.User{}); err != nil {
-//			log.Printf("Error on migrate table user: %v", err)
-//			return err
-//		}
-//	}
-//	if !DB.Migrator().HasTable(&v1.Reviewer{}) {
-//		if err := DB.Migrator().CreateTable(&v1.Reviewer{}); err != nil {
-//			log.Printf("Error on migrate table reviewer: %v", err)
-//			return err
-//		}
-//	}
-//	if !DB.Migrator().HasTable(&v1.Application{}) {
-//		if err := DB.Migrator().CreateTable(&v1.Application{}); err != nil {
-//			log.Printf("Error on migrate table Application: %v", err)
-//			return err
-//		}
-//	}
-//	return nil
-//}
+// func migration() error {
+// 	if !DB.Migrator().HasTable(&v1.User{}) {
+// 		if err := DB.Migrator().CreateTable(&v1.User{}); err != nil {
+// 			log.Printf("Error on migrate table user: %v", err)
+// 			return err
+// 		}
+// 	}
+// 	if !DB.Migrator().HasTable(&v1.Reviewer{}) {
+// 		if err := DB.Migrator().CreateTable(&v1.Reviewer{}); err != nil {
+// 			log.Printf("Error on migrate table reviewer: %v", err)
+// 			return err
+// 		}
+// 	}
+// 	if !DB.Migrator().HasTable(&v1.Application{}) {
+// 		if err := DB.Migrator().CreateTable(&v1.Application{}); err != nil {
+// 			log.Printf("Error on migrate table Application: %v", err)
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }

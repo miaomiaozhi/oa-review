@@ -41,17 +41,17 @@ func SendApiBadRequestResponse(ctx *Context, data interface{}, msg string) {
 // 认证错误 403
 func SendApiForbiddenResponse(ctx *Context, data interface{}, msg string) {
 	ctx.StatusCode(iris.StatusForbidden)
-	makeResponse(ctx, nil, "", iris.StatusBadRequest)
+	makeResponse(ctx, data, msg, iris.StatusBadRequest)
 }
 
-// 参数错误 500
+// 内部错误 500
 func SendApiErrorResponse(ctx *Context, data interface{}, msg string) {
 	ctx.StatusCode(iris.StatusInternalServerError)
-	makeResponse(ctx, nil, msg, iris.StatusInternalServerError)
+	makeResponse(ctx, data, msg, iris.StatusInternalServerError)
 }
 
 // 认证失败 401，需要重新登录
 func SendApiUnAuthResponse(ctx *Context, data interface{}, msg string) {
 	ctx.StatusCode(iris.StatusUnauthorized)
-	makeResponse(ctx, nil, msg, iris.StatusUnauthorized)
+	makeResponse(ctx, data, msg, iris.StatusUnauthorized)
 }

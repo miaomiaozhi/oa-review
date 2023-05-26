@@ -14,12 +14,16 @@ func (IrisRouter) InitApp(app *iris.Application) {
 	loadMiddlerware(app)
 	appRouter := app.Party("/")
 	{
-		//// 注册鉴权路由
-		//v1.RegisterAuthRouter(appRouter)
-		//{
-		//}
+		// 注册健康检查路由
 		v1.RegisterHealthRouter(appRouter)
+
+		// 注册User路由
+		v1.RegisterUserRouter(appRouter)
+
+		//注册Reviewer路由
+		//v1.RegisterReviewerRouter(appRouter)
 	}
+	logger.Info("init app success")
 }
 
 func loadMiddlerware(app *iris.Application) {

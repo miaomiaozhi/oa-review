@@ -56,13 +56,23 @@ func GetAutoResult(ctx iris.Context) *AuthResult {
 	return authInfo
 }
 
-// Handler will convert our handler of func(*Context) to an iris Handler,
-// in order to be compatible with the HTTP API.
-func Handler(h func(*Context)) iris.Handler {
+// 处理需要登录请求
+func Handler(handler func(*Context)) iris.Handler {
 	return func(original iris.Context) {
 		ctx := Acquire(original, true)
 		if !ctx.IsStopped() { // 请求被终止
-			h(ctx)
+			handler(ctx)
+		}
+		// TODO release
+	}
+}
+
+// 处理无需登录的请求
+func HandlerNotLogin(handle func(*Context)) iris.Handler {
+	return func(original iris.Context) {
+		ctx := Acquire(original, false)
+		if !ctx.IsStopped() { // 请求被终止
+			handle(ctx)
 		}
 		// TODO release
 	}

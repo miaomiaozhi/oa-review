@@ -2,6 +2,7 @@ package dao
 
 import (
 	"log"
+	"oa-review/db"
 	v1 "oa-review/models/protoreq/v1"
 )
 
@@ -10,7 +11,7 @@ import (
 App 实体创建一个新的 Application 并且返回 app id
 */
 func (*ApplicationDao) CreateApplication(app *v1.Application) (int64, error) {
-	result := DB.Create(&app)
+	result := db.GetDB().Create(&app)
 	if result.Error != nil {
 		return -1, result.Error
 	}
@@ -23,7 +24,7 @@ func (*ApplicationDao) CreateApplication(app *v1.Application) (int64, error) {
 */
 func (dao *ApplicationDao) FindApplicationById(appId int64) (*v1.Application, error) {
 	app := v1.Application{Id: appId}
-	res := DB.Where("application_id = ?", appId).First(&app)
+	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		log.Printf("Error on find app by app_id: %v\n", res.Error.Error())
 		return nil, res.Error
@@ -41,7 +42,7 @@ func (dao *ApplicationDao) FindApplicationById(appId int64) (*v1.Application, er
 */
 func (*ApplicationDao) UpdateApprovedReviewerForApplication(appId int64, reviewerId int64, reviewStatus bool) error {
 	app := v1.Application{Id: appId}
-	res := DB.Where("application_id = ?", appId).First(&app)
+	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		log.Printf("Error on update approved revewer for app: %v\n", res.Error.Error())
 		return nil
@@ -52,13 +53,13 @@ func (*ApplicationDao) UpdateApprovedReviewerForApplication(appId int64, reviewe
 	} else {
 		delete(app.ApprovedReviewer, reviewerId)
 	}
-	DB.Model(&app).Update("approved_reviewer", app.ApprovedReviewer)
+	db.GetDB().Model(&app).Update("approved_reviewer", app.ApprovedReviewer)
 	return nil
 }
 
 func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, error) {
 	app := v1.Application{Id: appId}
-	res := DB.Where("application_id = ?", appId).First(&app)
+	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		log.Printf("Error on update reviewer status for app: %v\n", res.Error.Error())
 		return false, nil
@@ -72,13 +73,13 @@ func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, erro
 	} else {
 		app.ReviewStatus = false
 	}
-	DB.Model(&app).Update("review_status", app.ReviewStatus)
+	db.GetDB().Model(&app).Update("review_status", app.ReviewStatus)
 	return app.ReviewStatus, nil
 }
 
 func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
 	var Application v1.Application
-	res := DB.Where("application_id = ?", Id).First(&Application)
+	res := db.GetDB().Where("id = ?", Id).First(&Application)
 	if res.Error != nil {
 		if res.Error.Error() == "record not found" {
 			log.Printf("Error on check Application exist: %v\n", res.Error.Error())
@@ -91,7 +92,7 @@ func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
 
 func (*ApplicationDao) TableSize() (int64, error) {
 	var count int64
-	if err := DB.Unscoped().Model(&v1.Application{}).Count(&count).Error; err != nil {
+	if err := db.GetDB().Unscoped().Model(&v1.Application{}).Count(&count).Error; err != nil {
 		log.Printf("Error on counting app table size: %v\n", err)
 		return 0, err
 	}
