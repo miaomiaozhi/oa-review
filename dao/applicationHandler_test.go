@@ -1,13 +1,13 @@
 package dao
 
 import (
-	v1 "oa-review/models/protoreq/v1"
+	bean "oa-review/bean"
 	"testing"
 )
 
 func TestApplicationDao_CreateApplication(t *testing.T) {
 	type args struct {
-		app *v1.Application
+		app *bean.Application
 	}
 	tests := []struct {
 		name    string
@@ -18,18 +18,18 @@ func TestApplicationDao_CreateApplication(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			args: args{app: &v1.Application{
+			args: args{app: &bean.Application{
 				Id:               222,
 				Context:          "test app",
 				ReviewStatus:     false,
 				UserId:           123,
-				ApprovedReviewer: make(v1.ApproverMap, 0),
+				ApprovedReviewer: make(bean.ApproverMap, 0),
 			}},
 			want:    222,
 			wantErr: false,
 		}, // ok
 		// {
-		// 	args: args{app: &v1.Application{
+		// 	args: args{app: &bean.Application{
 		// 		Id:               222,
 		// 		Context:          "test app",
 		// 		ReviewStatus:     false,
@@ -64,7 +64,7 @@ func TestApplicationDao_FindApplicationById(t *testing.T) {
 		name    string
 		dao     *ApplicationDao
 		args    args
-		want    *v1.Application
+		want    *bean.Application
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -75,7 +75,7 @@ func TestApplicationDao_FindApplicationById(t *testing.T) {
 		}, // not found
 		{
 			args: args{appId: 222},
-			want: &v1.Application{
+			want: &bean.Application{
 				Id:               222,
 				Context:          "test app",
 				ReviewStatus:     false, // diff
@@ -86,7 +86,7 @@ func TestApplicationDao_FindApplicationById(t *testing.T) {
 		}, // ok
 		{
 			args: args{appId: 222},
-			want: &v1.Application{
+			want: &bean.Application{
 				Id:               222,
 				Context:          "test app",
 				ReviewStatus:     true, // diff

@@ -2,16 +2,16 @@ package dao
 
 import (
 	"log"
+	bean "oa-review/bean"
 	"oa-review/db"
 	"oa-review/logger"
-	v1 "oa-review/models/protoreq/v1"
 )
 
 /*
 *
 App 实体创建一个新的 Application 并且返回 app id
 */
-func (*ApplicationDao) CreateApplication(app *v1.Application) (int64, error) {
+func (*ApplicationDao) CreateApplication(app *bean.Application) (int64, error) {
 	result := db.GetDB().Create(&app)
 	if result.Error != nil {
 		return -1, result.Error
@@ -23,8 +23,8 @@ func (*ApplicationDao) CreateApplication(app *v1.Application) (int64, error) {
 *
 根据 appId 返回 Application 实体
 */
-func (dao *ApplicationDao) FindApplicationById(appId int64) (*v1.Application, error) {
-	app := v1.Application{Id: appId}
+func (dao *ApplicationDao) FindApplicationById(appId int64) (*bean.Application, error) {
+	app := bean.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		logger.Errorf("Error on find app by app_id: %v\n", res.Error.Error())
@@ -42,7 +42,7 @@ func (dao *ApplicationDao) FindApplicationById(appId int64) (*v1.Application, er
 为 application 中的 ApprovedReviewer 添加通过的 Reviewer UserId
 */
 func (*ApplicationDao) UpdateApprovedReviewerForApplication(appId int64, reviewerId int64, reviewStatus bool) error {
-	app := v1.Application{Id: appId}
+	app := bean.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		logger.Errorf("Error on update approved revewer for app: %v\n", res.Error.Error())
@@ -59,7 +59,7 @@ func (*ApplicationDao) UpdateApprovedReviewerForApplication(appId int64, reviewe
 }
 
 func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, error) {
-	app := v1.Application{Id: appId}
+	app := bean.Application{Id: appId}
 	res := db.GetDB().Where("id = ?", appId).First(&app)
 	if res.Error != nil {
 		logger.Errorf("Error on update reviewer status for app: %v\n", res.Error.Error())
@@ -79,7 +79,7 @@ func (*ApplicationDao) UpdateReviewStatusForApplication(appId int64) (bool, erro
 }
 
 func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
-	var Application v1.Application
+	var Application bean.Application
 	res := db.GetDB().Where("id = ?", Id).Limit(1).Find(&Application)
 	if res.Error != nil {
 		logger.Errorf("Error on check Application exist: %v\n", res.Error.Error())
@@ -93,7 +93,7 @@ func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
 
 func (*ApplicationDao) TableSize() (int64, error) {
 	var count int64
-	if err := db.GetDB().Unscoped().Model(&v1.Application{}).Count(&count).Error; err != nil {
+	if err := db.GetDB().Unscoped().Model(&bean.Application{}).Count(&count).Error; err != nil {
 		log.Printf("Error on counting app table size: %v\n", err)
 		return 0, err
 	}

@@ -2,16 +2,16 @@ package dao
 
 import (
 	"fmt"
+	bean "oa-review/bean"
 	"oa-review/db"
 	"oa-review/logger"
-	v1 "oa-review/models/protoreq/v1"
 )
 
 /*
 *
 根据用户名和密码，创建一个新的 Reviewer，返回 Reviewer ID
 */
-func (*ReviewerDao) CreateReviewer(reviewer *v1.Reviewer) (int64, error) {
+func (*ReviewerDao) CreateReviewer(reviewer *bean.Reviewer) (int64, error) {
 	result := db.GetDB().Create(&reviewer)
 	if result.Error != nil {
 		return -1, result.Error
@@ -23,8 +23,8 @@ func (*ReviewerDao) CreateReviewer(reviewer *v1.Reviewer) (int64, error) {
 *
 根据 Id 返回对应的 Reviewer 实体
 */
-func (*ReviewerDao) FindReviewerById(reviewerId int64) (*v1.Reviewer, error) {
-	reviewer := v1.Reviewer{Id: reviewerId}
+func (*ReviewerDao) FindReviewerById(reviewerId int64) (*bean.Reviewer, error) {
+	reviewer := bean.Reviewer{Id: reviewerId}
 	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		logger.Errorf("Error on find reviewer by id: %v\n", res.Error.Error())
@@ -37,8 +37,8 @@ func (*ReviewerDao) FindReviewerById(reviewerId int64) (*v1.Reviewer, error) {
 /*
 传入 Id 以及 option 给 reviewer 的 options 添加操作
 */
-func (*ReviewerDao) AddReviewerOption(reviewerId int64, option *v1.ReviewOption) error {
-	reviewer := v1.Reviewer{Id: reviewerId}
+func (*ReviewerDao) AddReviewerOption(reviewerId int64, option *bean.ReviewOption) error {
+	reviewer := bean.Reviewer{Id: reviewerId}
 	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		logger.Errorf("Error on add reviewer option: %s", res.Error.Error())
@@ -49,8 +49,8 @@ func (*ReviewerDao) AddReviewerOption(reviewerId int64, option *v1.ReviewOption)
 	return nil
 }
 
-func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*v1.ReviewOption, error) {
-	reviewer := v1.Reviewer{Id: reviewerId}
+func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*bean.ReviewOption, error) {
+	reviewer := bean.Reviewer{Id: reviewerId}
 	res := db.GetDB().Where("id = ?", reviewerId).First(&reviewer)
 	if res.Error != nil {
 		logger.Errorf("Error on delete reviewer option: %s", res.Error.Error())
@@ -68,7 +68,7 @@ func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*v1.ReviewOption, er
 }
 
 func (*ReviewerDao) CheckReviewerExist(Id int64) (bool, error) {
-	var Reviewer v1.Reviewer
+	var Reviewer bean.Reviewer
 	res := db.GetDB().Where("id = ?", Id).Limit(1).Find(&Reviewer)
 	if res.Error != nil {
 		logger.Errorf("check reviewer exist error: %v", res.Error)
@@ -82,7 +82,7 @@ func (*ReviewerDao) CheckReviewerExist(Id int64) (bool, error) {
 
 func (*ReviewerDao) TableSize() (int64, error) {
 	var count int64
-	if err := db.GetDB().Unscoped().Model(&v1.Reviewer{}).Count(&count).Error; err != nil {
+	if err := db.GetDB().Unscoped().Model(&bean.Reviewer{}).Count(&count).Error; err != nil {
 		logger.Errorf("Error on counting reviewer table size: %v\n", err)
 		return 0, err
 	}

@@ -1,14 +1,14 @@
 package dao
 
 import (
-	v1 "oa-review/models/protoreq/v1"
+	bean "oa-review/bean"
 	"reflect"
 	"testing"
 )
 
 func TestReviewerDao_CreateReviewer(t *testing.T) {
 	type args struct {
-		reviewer *v1.Reviewer
+		reviewer *bean.Reviewer
 	}
 	tests := []struct {
 		name    string
@@ -20,7 +20,7 @@ func TestReviewerDao_CreateReviewer(t *testing.T) {
 		{
 			name: "test0",
 			args: args{
-				reviewer: &v1.Reviewer{
+				reviewer: &bean.Reviewer{
 					Id:           234,
 					Name:         "test_reviewer",
 					Applications: nil,
@@ -57,13 +57,13 @@ func TestReviewerDao_FindReviewerById(t *testing.T) {
 		name    string
 		r       *ReviewerDao
 		args    args
-		want    *v1.Reviewer
+		want    *bean.Reviewer
 		wantErr bool
 	}{
 		// TODO: Add test cases.
 		{
 			args: args{reviewerId: 234},
-			want: &v1.Reviewer{
+			want: &bean.Reviewer{
 				Id:           234,
 				Name:         "test_reviewer",
 				Applications: nil,
@@ -100,7 +100,7 @@ func TestReviewerDao_FindReviewerById(t *testing.T) {
 func TestReviewerDao_AddReviewerOption(t *testing.T) {
 	type args struct {
 		reviewerId int64
-		option     *v1.ReviewOption
+		option     *bean.ReviewOption
 	}
 	tests := []struct {
 		name    string
@@ -118,7 +118,7 @@ func TestReviewerDao_AddReviewerOption(t *testing.T) {
 		{
 			args: args{
 				reviewerId: 234,
-				option:     &v1.ReviewOption{ApplicationId: 555, ReviewStatus: true},
+				option:     &bean.ReviewOption{ApplicationId: 555, ReviewStatus: true},
 			},
 			wantErr: false,
 		}, // ok
@@ -142,7 +142,7 @@ func TestReviewerDao_DeleteReviewerOption(t *testing.T) {
 		name    string
 		r       *ReviewerDao
 		args    args
-		want    *v1.ReviewOption
+		want    *bean.ReviewOption
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -156,7 +156,7 @@ func TestReviewerDao_DeleteReviewerOption(t *testing.T) {
 		}, // empty
 		// {
 		// 	args:    args{reviewerId: 234},
-		// 	want:    &v1.ReviewOption{ApplicationId: 555, ReviewStatus: true},
+		// 	want:    &bean.ReviewOption{ApplicationId: 555, ReviewStatus: true},
 		// 	wantErr: false,
 		// }, // not empty
 	}

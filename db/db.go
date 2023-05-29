@@ -1,9 +1,9 @@
 package db
 
 import (
+	bean "oa-review/bean"
 	"oa-review/conf"
 	mlog "oa-review/logger"
-	v1 "oa-review/models/protoreq/v1"
 
 	"gorm.io/gorm"
 )
@@ -33,20 +33,20 @@ func InitDataBase(conf *conf.OaReviewConf) {
 
 func Migration() error {
 	DB := GetDB()
-	if !DB.Migrator().HasTable(&v1.User{}) {
-		if err := DB.Migrator().CreateTable(&v1.User{}); err != nil {
+	if !DB.Migrator().HasTable(&bean.User{}) {
+		if err := DB.Migrator().CreateTable(&bean.User{}); err != nil {
 			mlog.Info("Error on migrate table user:", err.Error())
 			return err
 		}
 	}
-	if !DB.Migrator().HasTable(&v1.Reviewer{}) {
-		if err := DB.Migrator().CreateTable(&v1.Reviewer{}); err != nil {
+	if !DB.Migrator().HasTable(&bean.Reviewer{}) {
+		if err := DB.Migrator().CreateTable(&bean.Reviewer{}); err != nil {
 			mlog.Info("Error on migrate table reviewer:", err.Error())
 			return err
 		}
 	}
-	if !DB.Migrator().HasTable(&v1.Application{}) {
-		if err := DB.Migrator().CreateTable(&v1.Application{}); err != nil {
+	if !DB.Migrator().HasTable(&bean.Application{}) {
+		if err := DB.Migrator().CreateTable(&bean.Application{}); err != nil {
 			mlog.Info("Error on migrate table application:", err.Error())
 			return err
 		}

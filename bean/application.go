@@ -1,4 +1,4 @@
-package v1
+package bean
 
 import (
 	"database/sql/driver"

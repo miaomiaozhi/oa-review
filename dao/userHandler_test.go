@@ -1,9 +1,9 @@
 package dao
 
 import (
+	bean "oa-review/bean"
 	"oa-review/db"
 	"oa-review/logger"
-	v1 "oa-review/models/protoreq/v1"
 	"testing"
 )
 
@@ -25,14 +25,14 @@ func ConnDBForUnitTest() {
 
 func DropTable() {
 	ConnDBForUnitTest()
-	db.GetDB().Migrator().DropTable(&v1.User{})
-	db.GetDB().Migrator().DropTable(&v1.Reviewer{})
-	db.GetDB().Migrator().DropTable(&v1.Application{})
+	db.GetDB().Migrator().DropTable(&bean.User{})
+	db.GetDB().Migrator().DropTable(&bean.Reviewer{})
+	db.GetDB().Migrator().DropTable(&bean.Application{})
 }
 
 func TestUserDao_CreateUser(t *testing.T) {
 	type args struct {
-		user *v1.User
+		user *bean.User
 	}
 	tests := []struct {
 		name    string
@@ -45,7 +45,7 @@ func TestUserDao_CreateUser(t *testing.T) {
 		{
 			name: "create_user",
 			u:    NewUserDaoInstance(),
-			args: args{user: &v1.User{
+			args: args{user: &bean.User{
 				Id:           11,
 				Password:     "123",
 				Name:         "test",
@@ -58,7 +58,7 @@ func TestUserDao_CreateUser(t *testing.T) {
 		// {
 		// 	name: "create_user",
 		// 	u:    NewUserDaoInstance(),
-		// 	args: args{user: &v1.User{
+		// 	args: args{user: &bean.User{
 		// 		Id:           22,
 		// 		Password:     "234",
 		// 		Name:         "test",
@@ -71,7 +71,7 @@ func TestUserDao_CreateUser(t *testing.T) {
 		// {
 		// 	name: "create_user",
 		// 	u:    NewUserDaoInstance(),
-		// 	args: args{user: &v1.User{
+		// 	args: args{user: &bean.User{
 		// 		Id:           33,
 		// 		Password:     "123",
 		// 		Name:         "test",
@@ -107,7 +107,7 @@ func TestUserDao_FindUserByUserId(t *testing.T) {
 		name    string
 		u       *UserDao
 		args    args
-		want    *v1.User
+		want    *bean.User
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -115,7 +115,7 @@ func TestUserDao_FindUserByUserId(t *testing.T) {
 			name: "test1",
 			u:    NewUserDaoInstance(),
 			args: args{11},
-			want: &v1.User{
+			want: &bean.User{
 				Id:       11,
 				Password: "123",
 				Name:     "test",
