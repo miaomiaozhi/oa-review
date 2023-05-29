@@ -98,6 +98,14 @@ func (h *OaReviewConf) GetString(path string, def string) string {
 	return val.String()
 }
 
+func (h *OaReviewConf) MustGetAny(path string) gjson.Result {
+	val := h.root.Get(path)
+	if !val.Exists() {
+		panic(fmt.Sprintf("cannot get config in %s %s", h.file, path))
+	}
+	return val
+}
+
 func (h *OaReviewConf) MustGetInt(path string) int64 {
 	val := h.root.Get(path)
 	if !val.Exists() {

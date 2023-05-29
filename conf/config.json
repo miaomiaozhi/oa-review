@@ -5,5 +5,30 @@
         "host": "127.0.0.1",
         "port": 3306,
         "dbname": "oa_review"
+    },
+    "workflow": {
+        "name": "work",
+        "stages": [
+            {
+                "reviewers": [
+                    {"id": 123}
+                ],
+                "condition": 0
+            },
+            {
+                "reviewers": [
+                    {"id": 234},
+                    {"id": 123},
+                    {"id": 234}
+                ],
+                "condition": 1
+            },
+            {
+                "reviewers": [
+                    {"id": 123},
+                    {"id": 345}
+                ]
+            }
+        ]
     }
 }
