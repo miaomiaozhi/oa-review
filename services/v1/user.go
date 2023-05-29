@@ -6,10 +6,11 @@ import (
 	"oa-review/internal/wrapper"
 	"oa-review/logger"
 	v1_req "oa-review/models/protoreq/v1"
-	"oa-review/models/protoresp"
 	v1_resp "oa-review/models/protoresp/v1"
 	"strconv"
 )
+
+// TODO: validator
 
 func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 	req := reqBody.(*v1_req.UserLoginRequest)
@@ -38,7 +39,7 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 	}
 
 	// TODO: jwt
-	wrapper.SendApiOKResponse(ctx, protoresp.GenDefaultBaseResponse(), "登录成功")
+	wrapper.SendApiOKResponse(ctx, nil, "登录成功")
 	return nil
 }
 
@@ -83,7 +84,7 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 		return err
 	}
 
-	apps := make([]*v1_resp.Application, len(user.Applications))
+	apps := make([]*v1_resp.Application, 0, len(user.Applications))
 	for _, id := range user.Applications {
 		app, err := dao.NewApplicationDaoInstance().FindApplicationById(id)
 		if err != nil {
@@ -108,6 +109,7 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 
 func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 	// TODO validator
+	// 进入流程
 	req := reqBody.(*v1_req.UserSubmitApplicationRequest)
 	appTableSize, err := dao.NewApplicationDaoInstance().TableSize()
 	if err != nil {

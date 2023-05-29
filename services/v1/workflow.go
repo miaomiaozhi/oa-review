@@ -1,4 +1,4 @@
-package web
+package v1
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ type Stage struct {
 
 type WorkFlow struct {
 	name   string   // 流程名称
-	index  int32    // 当前流程下标
+	index  int32    // 当前流程下标 -1 表示流程未开始，index == len(stages) 表示流程完成
 	stages []*Stage // 所有流程情况
 	status bool     // 流程是否终止
 }
@@ -47,18 +47,10 @@ var workflow *WorkFlow
 // 初始化工作流程
 func InitWorkFlow(conf *conf.OaReviewConf) {
 	stages := getStage(conf)
-	if len(stages) == 0 {
-		workflow = &WorkFlow{
-			name:   conf.GetString(workFlowNamePath, ""),
-			index:  0,
-			stages: stages,
-		}
-	} else {
-		workflow = &WorkFlow{
-			name:   conf.GetString(workFlowNamePath, ""),
-			index:  0,
-			stages: stages,
-		}
+	workflow = &WorkFlow{
+		name:   conf.GetString(workFlowNamePath, ""),
+		index:  -1,
+		stages: stages,
 	}
 	logger.Info("workflow init success")
 }

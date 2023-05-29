@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"log"
 	bean "oa-review/bean"
 	"oa-review/db"
 	"oa-review/logger"
@@ -13,6 +12,7 @@ App 实体创建一个新的 Application 并且返回 app id
 */
 func (*ApplicationDao) CreateApplication(app *bean.Application) (int64, error) {
 	result := db.GetDB().Create(&app)
+	logger.Debug("create application", app.ReviewStatus)
 	if result.Error != nil {
 		return -1, result.Error
 	}
@@ -30,11 +30,6 @@ func (dao *ApplicationDao) FindApplicationById(appId int64) (*bean.Application, 
 		logger.Errorf("Error on find app by app_id: %v\n", res.Error.Error())
 		return nil, res.Error
 	}
-	status, err := dao.UpdateReviewStatusForApplication(appId)
-	if err != nil {
-		return nil, err
-	}
-	app.ReviewStatus = status
 	return &app, nil
 }
 
@@ -94,7 +89,7 @@ func (*ApplicationDao) CheckApplicationExist(Id int64) (bool, error) {
 func (*ApplicationDao) TableSize() (int64, error) {
 	var count int64
 	if err := db.GetDB().Unscoped().Model(&bean.Application{}).Count(&count).Error; err != nil {
-		log.Printf("Error on counting app table size: %v\n", err)
+		logger.Errorf("Error on counting app table size: %v\n", err)
 		return 0, err
 	}
 	return count, nil

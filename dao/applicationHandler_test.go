@@ -19,26 +19,15 @@ func TestApplicationDao_CreateApplication(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			args: args{app: &bean.Application{
-				Id:               222,
+				Id:               123,
 				Context:          "test app",
 				ReviewStatus:     false,
 				UserId:           123,
 				ApprovedReviewer: make(bean.ApproverMap, 0),
 			}},
-			want:    222,
+			want:    123,
 			wantErr: false,
-		}, // ok
-		// {
-		// 	args: args{app: &bean.Application{
-		// 		Id:               222,
-		// 		Context:          "test app",
-		// 		ReviewStatus:     false,
-		// 		UserId:           123,
-		// 		ApprovedReviewer: nil,
-		// 	}},
-		// 	want:    222,
-		// 	wantErr: true,
-		// }, // has found
+		},
 	}
 	ConnDBForUnitTest()
 	for _, tt := range tests {
