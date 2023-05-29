@@ -107,7 +107,6 @@ func Error(v ...interface{}) {
 	setPrefix(ERROR)
 	logger.Println(v...)
 }
-
 func Errorf(format string, v ...interface{}) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -121,4 +120,10 @@ func Fatal(v ...interface{}) {
 	defer mu.Unlock()
 	setPrefix(FATAL)
 	logger.Fatalln(v...)
+}
+func Fatalf(format string, v ...interface{}) {
+	mu.Lock()
+	defer mu.Unlock()
+	setPrefix(FATAL)
+	logger.Println(fmt.Sprintf(format, v...))
 }

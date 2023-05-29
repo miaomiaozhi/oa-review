@@ -19,11 +19,14 @@ func InitDataBase(conf *conf.OaReviewConf) {
 		DBName:   conf.MustGetString("mysql.dbname"),
 	})
 	if err != nil {
-		mlog.Fatal(err)
+		mlog.Fatalf("new db error: %v", err.Error())
 	}
 	SetDB(mdb)
 	if err := Migration(); err != nil {
-		panic("migration error")
+		mlog.Fatalf("database migration error: %v", err.Error())
+	}
+	if conf.GetBool("mysql.debug", false) {
+		db.Debug()
 	}
 	mlog.Info("init db success")
 }

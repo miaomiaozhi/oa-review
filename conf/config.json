@@ -1,4 +1,5 @@
 {
+    "debug": false,
     "mysql": {
         "username": "root",
         "password": "mozezhao",

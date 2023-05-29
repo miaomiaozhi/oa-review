@@ -1,4 +1,4 @@
-package v1
+package web
 
 import (
 	"fmt"
@@ -12,6 +12,9 @@ const (
 	workFlowNamePath   = "workflow.name"
 	workFlowStagesPath = "workflow.stages"
 )
+
+type WorkFlowRunner struct {
+}
 
 type PassConditionType int
 
@@ -41,6 +44,25 @@ type WorkFlow struct {
 
 var workflow *WorkFlow
 
+// 初始化工作流程
+func InitWorkFlow(conf *conf.OaReviewConf) {
+	stages := getStage(conf)
+	if len(stages) == 0 {
+		workflow = &WorkFlow{
+			name:   conf.GetString(workFlowNamePath, ""),
+			index:  0,
+			stages: stages,
+		}
+	} else {
+		workflow = &WorkFlow{
+			name:   conf.GetString(workFlowNamePath, ""),
+			index:  0,
+			stages: stages,
+		}
+	}
+	logger.Info("workflow init success")
+}
+
 func getStage(conf *conf.OaReviewConf) []*Stage {
 	res := conf.MustGetAny(workFlowStagesPath)
 	stages := make([]*Stage, 0)
@@ -51,7 +73,9 @@ func getStage(conf *conf.OaReviewConf) []*Stage {
 			Status:        false,
 			PassCondition: PassConditionType(v.Get("condition").Num),
 		}
+		// logger.Info("stage pass condition", stage.PassCondition)
 		for _, v := range reviewersJson {
+			// logger.Info("reviewer info", v.Get("id").Int())
 			stage.Reviewers = append(stage.Reviewers, &Reviewer{
 				Id:     v.Get("id").Int(),
 				Status: false,
@@ -72,24 +96,6 @@ func (w *WorkFlow) Print() {
 			logger.Debug("reviewer info", r.Id, r.Status)
 		}
 		fmt.Println()
-	}
-}
-
-// 初始化工作流程
-func InitWorkFlow(conf *conf.OaReviewConf) {
-	stages := getStage(conf)
-	if len(stages) == 0 {
-		workflow = &WorkFlow{
-			name:   conf.GetString(workFlowNamePath, ""),
-			index:  0,
-			stages: stages,
-		}
-	} else {
-		workflow = &WorkFlow{
-			name:   conf.GetString(workFlowNamePath, ""),
-			index:  0,
-			stages: stages,
-		}
 	}
 }
 
@@ -115,6 +121,32 @@ func (w *WorkFlow) GetCurentStage() *Stage {
 		return nil
 	}
 	return w.stages[w.index]
+}
+
+func (s *Stage) Pass() bool {
+	if s == nil {
+		logger.Error("curent stage is empty")
+		return false
+	}
+	if s.PassCondition == ALL {
+		for _, v := range s.Reviewers {
+			if !v.Status {
+				s.Status = false
+				return false
+			}
+		}
+		s.Status = true
+		return true
+	} else {
+		for _, v := range s.Reviewers {
+			if v.Status {
+				s.Status = true
+				return true
+			}
+		}
+		s.Status = false
+		return false
+	}
 }
 
 func (w *WorkFlow) SetCurentStage(cur *Stage) bool {

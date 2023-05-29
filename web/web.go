@@ -1,20 +1,28 @@
 package web
 
 import (
-	"github.com/kataras/iris/v12"
+	"oa-review/conf"
 	"oa-review/logger"
 	"oa-review/routers"
+
+	"github.com/kataras/iris/v12"
 )
 
-type OaReviewWeb struct{}
+type OaReviewWeb struct {
+}
 
 func newApp() *iris.Application {
 	return iris.New()
 }
 
-func (OaReviewWeb) Run() {
+func New() *OaReviewWeb {
+	return &OaReviewWeb{}
+}
+
+func (*OaReviewWeb) Run(config *conf.OaReviewConf) {
+	InitWorkFlow(config)
 	app := newApp()
 	routers.IrisRouter{}.InitApp(app)
-	app.Listen(":8080")
 	logger.Info("app listening port: 8080")
+	app.Listen(":8080")
 }
