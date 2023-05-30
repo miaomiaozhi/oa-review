@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	logger "oa-review/logger"
 	jwt "oa-review/middleware"
+	"strings"
 
 	"github.com/kataras/iris/v12"
 )
@@ -33,24 +34,23 @@ func Acquire(original iris.Context, login bool) *Context {
 	if login {
 		ctx.UserToken = GetAuthResult(original)
 		if ctx.UserToken == nil {
-			ctx.StatusCode(401)
+			SendApiUnAuthResponse(ctx, nil, "Token 不合法")
 			ctx.StopExecution()
 		} else {
 			claim, err := jwt.ParseJwtToken(ctx.UserToken.Token)
 			if err != nil {
-				ctx.StatusCode(401)
+				SendApiUnAuthResponse(ctx, nil, "Token 不合法")
 				ctx.StopExecution()
 			} else {
-				userId, ok1 := claim["UserId"].(float64)
-				userName, ok2 := claim["UserName"].(string)
-				priority, ok3 := claim["Priority"].(float64)
+				userId, _ := claim["UserId"].(float64)
+				userName, _ := claim["UserName"].(string)
+				priority, _ := claim["Priority"].(float64)
 
 				// 不合法
-				if !ok1 || !ok2 || !ok3 ||
-					int64(userId) != ctx.UserToken.UserID ||
+				if int64(userId) != ctx.UserToken.UserID ||
 					userName != ctx.UserToken.UserName ||
 					int64(priority) != ctx.UserToken.Priority {
-					ctx.StatusCode(401)
+					SendApiUnAuthResponse(ctx, nil, "Token 不合法")
 					ctx.StopExecution()
 				}
 			}
@@ -65,6 +65,9 @@ func GetAuthResult(ctx iris.Context) *AuthResult {
 		logger.Error("header user invalid")
 		return nil
 	}
+	user = strings.Replace(user, "\\", "", -1)
+	logger.Info("header:", user)
+
 	// 得到授权信息
 	authInfo := &AuthResult{}
 	err := json.Unmarshal([]byte(user), &authInfo)

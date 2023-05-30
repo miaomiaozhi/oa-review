@@ -2,12 +2,12 @@ package v1
 
 // unauth
 type UserLoginRequest struct {
-	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`     // user id
-	UserPassword string `json:"UserPassword" validate:"required,len=2,lt=10"` // user password
+	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`      // user id
+	UserPassword string `json:"UserPassword" validate:"required,gte=3,lte=10"` // user password
 }
 type UserRegisterRequest struct {
 	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`
-	UserPassword string `json:"UserPassword" validate:"required,len=3,lt=10"`
+	UserPassword string `json:"UserPassword" validate:"required,gte=3,lte=10"`
 	UserName     string `json:"UserName" validate:"required,len=2,lt=10"`
 	Priority     int32  `json:"Priority" validate:"required,gte=0"`
 }

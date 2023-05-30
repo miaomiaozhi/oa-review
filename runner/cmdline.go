@@ -15,6 +15,7 @@ func MustReadConfigFromCmdFlags() (*conf.OaReviewConf, error) {
 	flag.Parse()
 
 	// 如果未指定config参数，则输出提示信息
+	logger.Info("config file path", configFilePath)
 	if configFilePath == "" {
 		logger.Fatal("config file path is empty")
 	}

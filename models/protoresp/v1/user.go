@@ -6,6 +6,9 @@ type Application struct {
 	ApplicationId int64  `json:"ApplicationId"`
 }
 
+type UserLoginResponse struct {
+	Token string `json:"Token"`
+}
 type UserGetInfoResponse struct {
 	Id           int64          `json:"Id"`
 	Name         string         `json:"Name"`

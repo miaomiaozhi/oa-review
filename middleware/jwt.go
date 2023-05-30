@@ -19,7 +19,8 @@ func GenJwtToken(userId int64, userName string, priority int64) (string, error) 
 	})
 
 	// 签名JWT token
-	jwtSecret := conf.GetConfig().Conf.MustGetString("web.jwt_token")
+	jwtSecret := conf.GetConfig().Conf.MustGetString("web.jwt_secret")
+	logger.Debug("jwt secret", jwtSecret)
 	// jwtSecret := "mozezhao"
 	secret := []byte(jwtSecret)
 	logger.Debug("jwt secret", jwtSecret)
@@ -39,7 +40,7 @@ func ParseJwtToken(jwtToken string) (jwt.MapClaims, error) {
 			logger.Errorf("parse jwt token failed: %v", fmt.Errorf("unexpected signing method: %v", token.Header["alg"]))
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		jwtSecret := conf.GetConfig().Conf.MustGetString("web.jwt_token")
+		jwtSecret := conf.GetConfig().Conf.MustGetString("web.jwt_secret")
 		// jwtSecret := "mozezhao"
 		secret := []byte(jwtSecret)
 		return secret, nil
@@ -52,6 +53,13 @@ func ParseJwtToken(jwtToken string) (jwt.MapClaims, error) {
 
 	// 提取JWT token的载荷信息
 	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
+		// parse args
+		_, ok1 := claims["UserId"].(float64)
+		_, ok2 := claims["UserName"].(string)
+		_, ok3 := claims["Priority"].(float64)
+		if !ok1 || !ok2 || !ok3 {
+			return nil, fmt.Errorf("parse jwt token failed: parsedToken invalid")
+		}
 		logger.Info("parse token ok")
 		return claims, nil
 	}

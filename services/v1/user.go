@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
 	"oa-review/bean"
 	"oa-review/dao"
 	"oa-review/internal/wrapper"
 	"oa-review/logger"
+	"oa-review/middleware"
 	v1_req "oa-review/models/protoreq/v1"
 	v1_resp "oa-review/models/protoresp/v1"
 	"strconv"
@@ -37,8 +39,28 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 		return nil
 	}
 
-	// TODO: jwt
-	wrapper.SendApiOKResponse(ctx, nil, "登录成功")
+	jwtToken, err := middleware.GenJwtToken(user.Id, user.Name, int64(user.Priority))
+	if err != nil {
+		return err
+	}
+	auth := AuthResult{
+		Token:    jwtToken,
+		UserID:   user.Id,
+		UserName: user.Name,
+		Priority: int64(user.Priority),
+	}
+
+	jsonData, err := json.Marshal(auth)
+	if err != nil {
+		logger.Errorf("marshal auth to json data failed: %v", err.Error())
+		return err
+	}
+
+	resp := v1_resp.UserLoginResponse{
+		Token: string(jsonData),
+	}
+	logger.Info("json token is", resp.Token)
+	wrapper.SendApiOKResponse(ctx, resp, "登录成功")
 	return nil
 }
 
