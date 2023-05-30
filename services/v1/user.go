@@ -72,6 +72,20 @@ func UserRegister(ctx *wrapper.Context, reqBody interface{}) error {
 	if _, err := dao.NewUserDaoInstance().CreateUser(&usr); err != nil {
 		return err
 	}
+	// 审核人注册 DAO create reviewer
+	if usr.Priority > 0 {
+		reviewer := bean.Reviewer{
+			Id:           usr.Id,
+			Name:         usr.Name,
+			Applications: usr.Applications,
+			Options:      make([]*bean.ReviewOption, 0),
+			Priority:     usr.Priority,
+			CreatedAt:    usr.CreatedAt,
+		}
+		if _, err := dao.NewReviewerDaoInstance().CreateReviewer(&reviewer); err != nil {
+			return err
+		}
+	}
 
 	wrapper.SendApiOKResponse(ctx, nil, "注册成功")
 	logger.Info("Apiwrapper user register ok")
@@ -129,12 +143,15 @@ func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 	}
 	if !workflow.CheckWorkFlowExist(req.UserId, req.ApplicationContext) {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "流程不存在")
+		return nil
 	}
 	if finish {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "流程已完成")
+		return nil
 	}
 	if workflow.IsStarted() {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "流程已开始")
+		return nil
 	}
 
 	// 启动流程

@@ -23,9 +23,13 @@ func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 		return nil
 	}
 	curStage := workflow.GetCurentIndex()
-	ok := workflow.SubmitReview(req.ApplicationId, req.ReviewStatus)
-	if !ok {
-		wrapper.SendApiBadRequestResponse(ctx, nil, "参数错误")
+	logger.Debug(curStage)
+	workflow.Print()
+	err := workflow.SubmitReview(req.UserId, req.ApplicationId, req.ReviewStatus)
+	workflow.Print()
+
+	if err != nil {
+		wrapper.SendApiBadRequestResponse(ctx, nil, err.Error())
 		return nil
 	}
 

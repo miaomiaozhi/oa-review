@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"oa-review/logger"
 )
 
@@ -61,35 +62,39 @@ func (w *WorkFlow) CheckCurrentStageFinish() bool {
 }
 
 // 提交审核 返回该操作是否成功
-func (w *WorkFlow) SubmitReview(reviewerId int64, status bool) bool {
+func (w *WorkFlow) SubmitReview(reviewerId int64, applicationId int64, status bool) error {
 	if !w.IsStarted() {
 		logger.Error("workflow submit review error")
-		return false
+		return fmt.Errorf("流程未开始")
 	}
 	logger.Info("workflow submit review")
 	stage := w.GetCurentStage()
-	stage.Update(reviewerId, status)
+	msg := stage.Update(reviewerId, status)
 	if stage.Pass() {
 		w.MoveNext()
 	}
-	return true
+	return msg
 }
 
 // 将当前的阶段更新，
-func (s *Stage) Update(reviewerId int64, status bool) {
+func (s *Stage) Update(reviewerId int64, status bool) error {
 	for i, v := range s.Reviewers {
 		if v.Id == reviewerId {
 			if s.Reviewers[i].Status != status {
 				if s.Reviewers[i].Status {
-					s.PassCondition -= 1
+					s.PassCount -= 1
 				} else {
-					s.PassCondition -= 1
+					s.PassCount += 1
 				}
 			}
+			s.Reviewers[i].Status = status
+			logger.Debug("stage update success", reviewerId, status)
 			_ = s.Pass()
-			break
+			return nil
 		}
 	}
+	logger.Debug("stage update error", reviewerId, status)
+	return fmt.Errorf("无法审核当前阶段")
 }
 
 func (w *WorkFlow) updateAllStages() {
@@ -123,5 +128,6 @@ func (w *WorkFlow) WithDrawReview(reviewerId int64, status bool, stageIdx int32)
 	stage := w.stages[stageIdx]
 	stage.Update(reviewerId, status)
 	_ = stage.Pass()
+	w.updateAllStages()
 	return true
 }
