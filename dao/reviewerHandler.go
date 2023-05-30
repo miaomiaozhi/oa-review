@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	bean "oa-review/bean"
 	"oa-review/db"
 	"oa-review/logger"
@@ -58,7 +57,7 @@ func (*ReviewerDao) DeleteReviewerOption(reviewerId int64) (*bean.ReviewOption, 
 	}
 	if len(reviewer.Options) == 0 {
 		logger.Error("Error on delete reviewer option: options empty")
-		return nil, fmt.Errorf("reviewer options empty")
+		return nil, nil
 	}
 	optLen := len(reviewer.Options)
 	opt := reviewer.Options[optLen-1]

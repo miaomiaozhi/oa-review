@@ -8,9 +8,11 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-const (
-	workFlowNamePath   = "workflow.name"
-	workFlowStagesPath = "workflow.stages"
+var (
+	workFlowNamePath        = "workflow.name"
+	workFlowStagesPath      = "workflow.stages"
+	workFlowContextPath     = "workflow.context"
+	workFlowApplicantIdPath = "workflow.applicantId"
 )
 
 type WorkFlowRunner struct {
@@ -33,13 +35,18 @@ type Stage struct {
 	Reviewers     []*Reviewer       // 审核人群
 	Status        bool              // 当前阶段是否通过
 	PassCondition PassConditionType // 通过条件
+	PassCount     int32             // 通过人数
 }
 
 type WorkFlow struct {
-	name   string   // 流程名称
-	index  int32    // 当前流程下标 -1 表示流程未开始，index == len(stages) 表示流程完成
-	stages []*Stage // 所有流程情况
-	status bool     // 流程是否终止
+	name          string   // 流程名称
+	applicantId   int64    // 申请人编号
+	applicationId int64    // 申请编号，流程启动时赋值
+	context       string   // 申请内容
+	index         int32    // 当前流程下标 -1 表示流程未开始，index == len(stages) 表示流程完成
+	stages        []*Stage // 所有流程情况
+	status        bool     // 流程是否终止
+
 }
 
 var workflow *WorkFlow
@@ -48,9 +55,11 @@ var workflow *WorkFlow
 func InitWorkFlow(conf *conf.OaReviewConf) {
 	stages := getStage(conf)
 	workflow = &WorkFlow{
-		name:   conf.GetString(workFlowNamePath, ""),
-		index:  -1,
-		stages: stages,
+		name:        conf.GetString(workFlowNamePath, ""),
+		applicantId: conf.MustGetInt(workFlowApplicantIdPath),
+		context:     conf.MustGetString(workFlowContextPath),
+		index:       -1,
+		stages:      stages,
 	}
 	logger.Info("workflow init success")
 }
@@ -91,12 +100,13 @@ func (w *WorkFlow) Print() {
 	}
 }
 
-func GetWorkFlow() (bool, *WorkFlow) {
+// 返回 workflow, 以及 IsFinish
+func GetWorkFlow() (*WorkFlow, bool) {
 	if workflow == nil {
-		logger.Fatal("init workflow must called before get")
-		return false, nil
+		logger.Error("init workflow must called before get")
+		return nil, false
 	}
-	return workflow.status, workflow
+	return workflow, workflow.status
 }
 
 func (w *WorkFlow) GetCurentStage() *Stage {
@@ -115,30 +125,18 @@ func (w *WorkFlow) GetCurentStage() *Stage {
 	return w.stages[w.index]
 }
 
+// 更新当前的状态，并且返回当前是否通过 
 func (s *Stage) Pass() bool {
 	if s == nil {
 		logger.Error("curent stage is empty")
 		return false
 	}
 	if s.PassCondition == ALL {
-		for _, v := range s.Reviewers {
-			if !v.Status {
-				s.Status = false
-				return false
-			}
-		}
-		s.Status = true
-		return true
+		s.Status = (s.PassCount == int32(len(s.Reviewers)))
 	} else {
-		for _, v := range s.Reviewers {
-			if v.Status {
-				s.Status = true
-				return true
-			}
-		}
-		s.Status = false
-		return false
+		s.Status = (s.PassCount > 0)
 	}
+	return s.Status
 }
 
 func (w *WorkFlow) SetCurentStage(cur *Stage) bool {

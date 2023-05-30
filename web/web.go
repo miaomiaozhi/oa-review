@@ -4,6 +4,7 @@ import (
 	"oa-review/conf"
 	"oa-review/logger"
 	"oa-review/routers"
+	workflow "oa-review/services/v1"
 	"strconv"
 
 	"github.com/kataras/iris/v12"
@@ -21,7 +22,7 @@ func New() *OaReviewWeb {
 }
 
 func (*OaReviewWeb) Run(config *conf.OaReviewConf) {
-	InitWorkFlow(config)
+	workflow.InitWorkFlow(config)
 	app := newApp()
 	routers.IrisRouter{}.InitApp(app)
 	port := config.GetInt("web.port", 8080)

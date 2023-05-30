@@ -1,8 +1,9 @@
 package v1
 
 type Application struct {
-	Context      string `json:"Context"`
-	ReviewStatus bool   `json:"ReviewStatus"`
+	Context       string `json:"Context"`
+	ReviewStatus  bool   `json:"ReviewStatus"`
+	ApplicationId int64  `json:"ApplicationId"`
 }
 
 type UserGetInfoResponse struct {

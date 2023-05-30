@@ -18,10 +18,8 @@ func (IrisRouter) InitApp(app *iris.Application) {
 		v1.RegisterHealthRouter(appRouter)
 
 		// 注册User路由
+		// 包括普通用户以及审核用户
 		v1.RegisterUserRouter(appRouter)
-
-		//注册Reviewer路由
-		//v1.RegisterReviewerRouter(appRouter)
 	}
 	logger.Info("init app success")
 }

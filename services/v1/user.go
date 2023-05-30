@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"oa-review/bean"
 	"oa-review/dao"
 	"oa-review/internal/wrapper"
@@ -13,8 +14,9 @@ import (
 // TODO: validator
 
 func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
+	logger.Info("handle user Login now")
 	req := reqBody.(*v1_req.UserLoginRequest)
-	logger.Debug("user info", req.UserId, req.UserPassword)
+	// logger.Debug("user info", req.UserId, req.UserPassword)
 	userIdStr, userPsw := req.UserId, req.UserPassword
 	// logger.Info("handle user login, user info :", userIdStr, userPsw)
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
@@ -22,7 +24,7 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户信息错误")
 		return nil
 	}
-	logger.Debug("user info", userId)
+	// logger.Debug("user info", userId)
 	// 判断是否存在
 	if exist, _ := dao.NewUserDaoInstance().CheckUserExist(userId); !exist {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户不存在")
@@ -44,6 +46,7 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 }
 
 func UserRegister(ctx *wrapper.Context, reqBody interface{}) error {
+	logger.Info("handle user Register now")
 	req := reqBody.(*v1_req.UserRegisterRequest)
 	userIdStr, userPsw := req.UserId, req.UserPassword
 	// logger.Info("handle user login, user info :", userIdStr, userPsw)
@@ -70,12 +73,13 @@ func UserRegister(ctx *wrapper.Context, reqBody interface{}) error {
 		return err
 	}
 
-	wrapper.SendApiOKResponse(ctx, nil, "register success")
+	wrapper.SendApiOKResponse(ctx, nil, "注册成功")
 	logger.Info("Apiwrapper user register ok")
 	return nil
 }
 
 func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
+	logger.Info("handle user GetInfo now")
 	// TODO validator
 	req := reqBody.(*v1_req.UserGetInfoRequest)
 	user, err := dao.NewUserDaoInstance().FindUserByUserId(req.UserId)
@@ -92,8 +96,9 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 			return err
 		}
 		apps = append(apps, &v1_resp.Application{
-			Context:      app.Context,
-			ReviewStatus: app.ReviewStatus,
+			Context:       app.Context,
+			ReviewStatus:  app.ReviewStatus,
+			ApplicationId: app.Id,
 		})
 	}
 	resp := v1_resp.UserGetInfoResponse{
@@ -108,13 +113,32 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 }
 
 func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
+	logger.Info("handle user SubmitApplication now")
+
 	// TODO validator
 	// 进入流程
+
 	req := reqBody.(*v1_req.UserSubmitApplicationRequest)
 	appTableSize, err := dao.NewApplicationDaoInstance().TableSize()
 	if err != nil {
 		return err
 	}
+	workflow, finish := GetWorkFlow()
+	if workflow == nil {
+		return fmt.Errorf("工作流为空")
+	}
+	if !workflow.CheckWorkFlowExist(req.UserId, req.ApplicationContext) {
+		wrapper.SendApiBadRequestResponse(ctx, nil, "流程不存在")
+	}
+	if finish {
+		wrapper.SendApiBadRequestResponse(ctx, nil, "流程已完成")
+	}
+	if workflow.IsStarted() {
+		wrapper.SendApiBadRequestResponse(ctx, nil, "流程已开始")
+	}
+
+	// 启动流程
+	workflow.Start()
 	app := &bean.Application{
 		Id:               appTableSize + 1,
 		Context:          req.ApplicationContext,
@@ -122,6 +146,7 @@ func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 		UserId:           req.UserId,
 		ApprovedReviewer: make(bean.ApproverMap),
 	}
+	workflow.SetApplicationId(app.Id)
 	if err := dao.NewUserDaoInstance().AddApplicationForUser(req.UserId, appTableSize+1); err != nil {
 		return err
 	}

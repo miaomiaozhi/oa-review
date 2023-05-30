@@ -8,9 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// 上一个审核操作的结构
 type ReviewOption struct {
-	ApplicationId int64
-	ReviewStatus  bool
+	Stage         int32 // 阶段
+	ApplicationId int64 // 申请ID
+	ReviewStatus  bool  // 审核状态
 }
 
 type ReviewOptions []*ReviewOption

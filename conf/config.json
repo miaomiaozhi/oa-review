@@ -12,6 +12,8 @@
   },
   "workflow": {
     "name": "work",
+    "applicantId": 11,
+    "context": "test",
     "stages": [
       {
         "reviewers": [
