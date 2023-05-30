@@ -2,21 +2,21 @@ package v1
 
 // unauth
 type UserLoginRequest struct {
-	UserId       string `json:"UserId,omitempty"`       // user id
-	UserPassword string `json:"UserPassword,omitempty"` // user password
+	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`     // user id
+	UserPassword string `json:"UserPassword" validate:"required,len=2,lt=10"` // user password
 }
 type UserRegisterRequest struct {
-	UserId       string `json:"UserId,omitempty"`
-	UserPassword string `json:"UserPassword,omitempty"`
-	UserName     string `json:"UserName,omitempty"`
-	Priority     int32  `json:"Priority,omitempty"`
+	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`
+	UserPassword string `json:"UserPassword" validate:"required,len=3,lt=10"`
+	UserName     string `json:"UserName" validate:"required,len=2,lt=10"`
+	Priority     int32  `json:"Priority" validate:"required,gte=0"`
 }
 
 // auth
 type UserGetInfoRequest struct {
-	UserId int64 `json:"UserId,omitempty"`
+	UserId int64 `json:"UserId" validate:"required,gte=1"`
 }
 type UserSubmitApplicationRequest struct {
-	UserId             int64  `json:"UserId,omitempty"`
-	ApplicationContext string `json:"ApplicationContext,omitempty"`
+	UserId             int64  `json:"UserId" validate:"required,gte=1"`
+	ApplicationContext string `json:"ApplicationContext" validate:"required"`
 }

@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"fmt"
 	"oa-review/bean"
 	"oa-review/dao"
 	"oa-review/internal/wrapper"
@@ -16,16 +15,14 @@ import (
 func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user Login now")
 	req := reqBody.(*v1_req.UserLoginRequest)
-	// logger.Debug("user info", req.UserId, req.UserPassword)
-	userIdStr, userPsw := req.UserId, req.UserPassword
-	// logger.Info("handle user login, user info :", userIdStr, userPsw)
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
-	if userIdStr == "" || userPsw == "" || err != nil || userId < 0 {
-		wrapper.SendApiBadRequestResponse(ctx, nil, "用户信息错误")
+
+	userId, err := strconv.ParseInt(req.UserId, 10, 64)
+	if err != nil {
+		wrapper.SendApiBadRequestResponse(ctx, nil, "user Id 错误")
 		return nil
 	}
-	// logger.Debug("user info", userId)
-	// 判断是否存在
+
+	logger.Debug("user info", userId)
 	if exist, _ := dao.NewUserDaoInstance().CheckUserExist(userId); !exist {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户不存在")
 		return nil
@@ -35,7 +32,7 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 	if err != nil {
 		return err
 	}
-	if user.Password != userPsw {
+	if user.Password != req.UserPassword {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户密码错误")
 		return nil
 	}
@@ -48,13 +45,10 @@ func UserLogin(ctx *wrapper.Context, reqBody interface{}) error {
 func UserRegister(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user Register now")
 	req := reqBody.(*v1_req.UserRegisterRequest)
-	userIdStr, userPsw := req.UserId, req.UserPassword
-	// logger.Info("handle user login, user info :", userIdStr, userPsw)
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
-	if userIdStr == "" || userPsw == "" || err != nil || req.UserName == "" || req.Priority < 0 || userId < 0 {
-		wrapper.SendApiBadRequestResponse(ctx, nil, "用户信息错误")
-		return nil
-	}
+
+	logger.Info("handle user login, user info :", req.UserId, req.UserName)
+	userId, _ := strconv.ParseInt(req.UserId, 10, 64)
+
 	// 判断是否存在
 	if exist, err := dao.NewUserDaoInstance().CheckUserExist(userId); err != nil || exist {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户 id 错误或用户已存在")
@@ -94,8 +88,14 @@ func UserRegister(ctx *wrapper.Context, reqBody interface{}) error {
 
 func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user GetInfo now")
-	// TODO validator
+
 	req := reqBody.(*v1_req.UserGetInfoRequest)
+	// 判断是否存在
+	if exist, err := dao.NewUserDaoInstance().CheckUserExist(req.UserId); err != nil || !exist {
+		wrapper.SendApiBadRequestResponse(ctx, nil, "用户不存在")
+		return nil
+	}
+
 	user, err := dao.NewUserDaoInstance().FindUserByUserId(req.UserId)
 	if err != nil {
 		logger.Error("数据库查询错误", err.Error())
@@ -129,9 +129,6 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user SubmitApplication now")
 
-	// TODO validator
-	// 进入流程
-
 	req := reqBody.(*v1_req.UserSubmitApplicationRequest)
 	appTableSize, err := dao.NewApplicationDaoInstance().TableSize()
 	if err != nil {
@@ -139,8 +136,10 @@ func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 	}
 	workflow, finish := GetWorkFlow()
 	if workflow == nil {
-		return fmt.Errorf("工作流为空")
+		wrapper.SendApiBadRequestResponse(ctx, nil, "工作流不存在")
+		return nil
 	}
+
 	if !workflow.CheckWorkFlowExist(req.UserId, req.ApplicationContext) {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "流程不存在")
 		return nil

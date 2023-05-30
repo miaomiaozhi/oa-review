@@ -1,7 +1,8 @@
 {
   "debug": false,
   "web": {
-    "port": 8080
+    "port": 8080,
+    "jwt_secret": "mozezhao"
   },
   "mysql": {
     "username": "root",

@@ -11,7 +11,11 @@ import (
 func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle ReviewerSubmit now")
 	req := reqBody.(*v1_req.ReviewerSubmitRequest)
-	// validator
+
+	if ctx.UserToken.Priority <= 0 {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "无权限提交审核")
+		return nil
+	}
 
 	workflow, finish := GetWorkFlow()
 	if workflow == nil {
@@ -24,9 +28,7 @@ func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 	}
 	curStage := workflow.GetCurentIndex()
 	logger.Debug(curStage)
-	workflow.Print()
 	err := workflow.SubmitReview(req.UserId, req.ApplicationId, req.ReviewStatus)
-	workflow.Print()
 
 	if err != nil {
 		wrapper.SendApiBadRequestResponse(ctx, nil, err.Error())
@@ -42,6 +44,7 @@ func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 			ReviewStatus:  req.ReviewStatus,
 		})
 	}
+
 	if req.ReviewStatus {
 		dao.NewApplicationDaoInstance().UpdateApprovedReviewerForApplication(req.ApplicationId, req.UserId, true)
 	} else {
@@ -57,12 +60,16 @@ func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 func ReviewerWithDraw(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle ReviewerWithDraw now")
 
-	// TODO: validator
 	req := reqBody.(*v1_req.ReviewerWithDrawRequest)
+	if ctx.UserToken.Priority <= 0 {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "无权限提交审核")
+		return nil
+	}
 
 	// 持久化
 	option, err := dao.NewReviewerDaoInstance().DeleteReviewerOption(req.UserId)
 	if err != nil {
+		logger.Errorf("delete reviewer opt error: %v", err.Error())
 		return err
 	}
 	if option == nil {

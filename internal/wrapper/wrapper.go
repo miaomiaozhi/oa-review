@@ -2,7 +2,11 @@ package wrapper
 
 import (
 	logger "oa-review/logger"
+
+	"github.com/go-playground/validator"
 )
+
+var validate = validator.New()
 
 type ApiHandler func(ctx *Context, reqBody interface{}) error
 
@@ -31,12 +35,25 @@ func ApiWrapper(ctx *Context, handler ApiHandler, paramChecker bool, reqBody int
 			return
 		}
 
+		// 参数校验
 		if paramChecker {
-			// TODO
+			if err := checkParam(reqBody); err != nil {
+				logger.Info("param checker error:", err.Error())
+				SendApiBadRequestResponse(ctx, nil, "参数错误")
+				return
+			}
 		}
 	}
 	err := handler(ctx, reqBody)
 	if err != nil {
 		SendApiErrorResponse(ctx, nil, "内部错误")
 	}
+}
+
+func checkParam(reqBody interface{}) error {
+	err := validate.Struct(reqBody)
+	if err != nil {
+		return err
+	}
+	return nil
 }

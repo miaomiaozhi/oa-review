@@ -3,6 +3,8 @@ module oa-review
 go 1.20
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/kataras/iris/v12 v12.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/tidwall/gjson v1.14.4
@@ -11,11 +13,15 @@ require (
 )
 
 require (
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
