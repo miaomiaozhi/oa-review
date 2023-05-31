@@ -11,6 +11,10 @@ import (
 func ReviewerSubmit(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle ReviewerSubmit now")
 	req := reqBody.(*v1_req.ReviewerSubmitRequest)
+	if req.UserId != ctx.UserToken.UserID {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "token user Id 与请求 user id 不一致")
+		return nil
+	}
 
 	if ctx.UserToken.Priority <= 0 {
 		wrapper.SendApiUnAuthResponse(ctx, nil, "无权限提交审核")
@@ -61,6 +65,10 @@ func ReviewerWithDraw(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle ReviewerWithDraw now")
 
 	req := reqBody.(*v1_req.ReviewerWithDrawRequest)
+	if req.UserId != ctx.UserToken.UserID {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "token user Id 与请求 user id 不一致")
+		return nil
+	}
 	if ctx.UserToken.Priority <= 0 {
 		wrapper.SendApiUnAuthResponse(ctx, nil, "无权限提交审核")
 		return nil

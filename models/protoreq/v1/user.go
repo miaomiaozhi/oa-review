@@ -8,8 +8,8 @@ type UserLoginRequest struct {
 type UserRegisterRequest struct {
 	UserId       string `json:"UserId" validate:"numeric,gte=1,required"`
 	UserPassword string `json:"UserPassword" validate:"required,gte=3,lte=10"`
-	UserName     string `json:"UserName" validate:"required,len=2,lt=10"`
-	Priority     int32  `json:"Priority" validate:"required,gte=0"`
+	UserName     string `json:"UserName" validate:"required,gte=1,lte=10"`
+	Priority     int32  `json:"Priority" validate:"gte=0"`
 }
 
 // auth

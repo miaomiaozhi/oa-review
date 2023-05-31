@@ -112,6 +112,10 @@ func UserGetInfo(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user GetInfo now")
 
 	req := reqBody.(*v1_req.UserGetInfoRequest)
+	if req.UserId != ctx.UserToken.UserID {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "token user Id 与请求 user id 不一致")
+		return nil
+	}
 	// 判断是否存在
 	if exist, err := dao.NewUserDaoInstance().CheckUserExist(req.UserId); err != nil || !exist {
 		wrapper.SendApiBadRequestResponse(ctx, nil, "用户不存在")
@@ -152,6 +156,10 @@ func UserSubmitApplication(ctx *wrapper.Context, reqBody interface{}) error {
 	logger.Info("handle user SubmitApplication now")
 
 	req := reqBody.(*v1_req.UserSubmitApplicationRequest)
+	if req.UserId != ctx.UserToken.UserID {
+		wrapper.SendApiUnAuthResponse(ctx, nil, "token user Id 与请求 user id 不一致")
+		return nil
+	}
 	appTableSize, err := dao.NewApplicationDaoInstance().TableSize()
 	if err != nil {
 		return err

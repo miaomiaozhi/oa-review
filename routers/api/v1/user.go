@@ -21,8 +21,8 @@ func RegisterUserRouter(party router.Party) {
 	}
 	v1_login := party.Party("/user/review")
 	{
-		v1_login.Handle(http.MethodPost, "/submit", wrapper.HandlerNotLogin(v1_controller.ReviewerController{}.ReviewerSubmit))
-		v1_login.Handle(http.MethodPost, "/withdraw", wrapper.HandlerNotLogin(v1_controller.ReviewerController{}.ReviewerWithDraw))
+		v1_login.Handle(http.MethodPost, "/submit", wrapper.Handler(v1_controller.ReviewerController{}.ReviewerSubmit))
+		v1_login.Handle(http.MethodPost, "/withdraw", wrapper.Handler(v1_controller.ReviewerController{}.ReviewerWithDraw))
 	}
 
 	logger.Info("register user router success")
