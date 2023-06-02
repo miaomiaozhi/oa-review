@@ -15,6 +15,9 @@ func main() {
 	}
 	conf.InitGlobalConfig(config)
 
+	// 初始化日志
+	logger.InitWithConfig(config)
+
 	// 初始化数据库
 	db.InitDataBase(config)
 

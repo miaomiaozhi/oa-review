@@ -6,11 +6,10 @@ services:
       MYSQL_DATABASE: oa_review
       MYSQL_ROOT_PASSWORD: mozezhao
       MYSQL_ROOT_HOST: '%'
-    restart: unless-stopped
+    restart: always
     ports:
       - "3307:3306"
-    networks:
-      - oa-networks
+
   web:
     build:
       context: .
@@ -19,9 +18,3 @@ services:
       - "8080:8080"
     depends_on:
       - db
-    networks:
-      - oa-networks
-networks:
-  oa-networks:
-    external: false # 如果声明一个外部网络，那就要手动创建一个
-    name: oa-networks

@@ -7,9 +7,13 @@
   "mysql": {
     "username": "root",
     "password": "mozezhao",
-    "host": "127.0.0.1",
+    "host": "db",
     "port": 3306,
     "dbname": "oa_review"
+  },
+  "logger": {
+    "dirpath": "./",
+    "filename": "oa-review.log"
   },
   "workflow": {
     "name": "work",

@@ -11,13 +11,21 @@ import (
 var db *gorm.DB
 
 func InitDataBase(conf *conf.OaReviewConf) {
-	mdb, err := NewDB(&DBConfig{
+	dbConfig := &DBConfig{
 		Username: conf.MustGetString("mysql.username"),
 		Password: conf.MustGetString("mysql.password"),
 		Host:     conf.MustGetString("mysql.host"),
 		Port:     uint16(conf.GetInt("mysql.port", 3306)),
 		DBName:   conf.MustGetString("mysql.dbname"),
-	})
+	}
+	mdb, err := NewDB(dbConfig)
+	mlog.Debug("db config info is")
+	mlog.Debug(dbConfig.Username)
+	mlog.Debug(dbConfig.Password)
+	mlog.Debug(dbConfig.Host)
+	mlog.Debug(dbConfig.Port)
+	mlog.Debug(dbConfig.DBName)
+
 	if err != nil {
 		mlog.Fatalf("new db error: %v", err.Error())
 	}

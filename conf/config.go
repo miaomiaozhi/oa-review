@@ -3,7 +3,9 @@ package conf
 import (
 	"fmt"
 	"io/ioutil"
-	"oa-review/logger"
+	"log"
+
+	// "oa-review/logger"
 
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
@@ -24,8 +26,7 @@ var globalConfInfo *globalConf
 // 读取全局配置文件数据
 func GetConfig() *globalConf {
 	if globalConfInfo == nil {
-		logger.Fatal("init global config must be called before GET")
-		return nil
+		panic("init global config must be called before GET")
 	}
 	return globalConfInfo
 }
@@ -41,8 +42,8 @@ func Read(filePath string) (*OaReviewConf, error) {
 	if err != nil {
 		return nil, errors.WithMessagef(err, "in %s", filePath)
 	}
-	logger.Info("read config file path success")
 	conf.file = filePath
+	log.Println("read config file path success")
 	return conf, nil
 }
 
@@ -52,7 +53,6 @@ func Parse(jsonData string) (*OaReviewConf, error) {
 	}
 	res := gjson.Parse(jsonData)
 
-	logger.Info("parse json data success")
 	c := &OaReviewConf{
 		root: res,
 	}
@@ -63,7 +63,7 @@ func InitGlobalConfig(conf *OaReviewConf) {
 	globalConfInfo = &globalConf{
 		Conf: conf,
 	}
-	logger.Info("Init global config success")
+	log.Println("init global config success")
 }
 
 func (h *OaReviewConf) GetInt(path string, def int64) int64 {

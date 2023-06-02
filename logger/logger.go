@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"oa-review/conf"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -44,13 +45,13 @@ func init() {
 }
 
 // 初始化日志
-func Setup(settings *Settings) {
+func InitWithConfig(conf *conf.OaReviewConf) {
 	var err error
-	dir := settings.Path
-	fileName := settings.FileName
+	dir := conf.MustGetString("logger.dirpath")
+	fileName := conf.MustGetString("logger.filename")
 	logFile, err = mustOpen(fileName, dir)
 	if err != nil {
-		log.Fatalf("logging.Setup err: %s", err)
+		log.Fatalf("logging.InitWithConfig err: %s", err)
 	}
 
 	mw := io.MultiWriter(os.Stdout, logFile)

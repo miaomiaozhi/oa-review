@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  db:
+    image: mysql
+    environment:
+      MYSQL_DATABASE: oa_review
+      MYSQL_ROOT_PASSWORD: mozezhao
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306" # 将本机的3307映射到3306
+    # networks:
+    #   - oa-review-networks
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    # networks:
+    #   - oa-review-net
+# networks:
+#   oa-review-net:
+#     external: false # 如果声明一个外部网络，那就要手动创建一个
+#     name: oa-review-net
