@@ -21,3 +21,20 @@
 [INFO][user.go:28] 2023/06/02 17:01:16 register user router success
 [INFO][router.go:23] 2023/06/02 17:01:16 init app success
 [INFO][web.go:29] 2023/06/02 17:01:16 app listening port: 8080
+[INFO][mysql.go:50] 2023/06/07 10:38:02 new db successs
+[DEBUG][db.go:22] 2023/06/07 10:38:02 db config info is
+[DEBUG][db.go:23] 2023/06/07 10:38:02 root
+[DEBUG][db.go:24] 2023/06/07 10:38:02 mozezhao
+[DEBUG][db.go:25] 2023/06/07 10:38:02 localhost
+[DEBUG][db.go:26] 2023/06/07 10:38:02 3306
+[DEBUG][db.go:27] 2023/06/07 10:38:02 oa_review
+[INFO][db.go:39] 2023/06/07 10:38:02 init db success
+[INFO][workflow.go:64] 2023/06/07 10:38:02 workflow init success
+[INFO][router.go:13] 2023/06/07 10:38:02 init app
+[INFO][router.go:27] 2023/06/07 10:38:02 load middle ware for app
+[INFO][health.go:17] 2023/06/07 10:38:02 register health router success
+[INFO][user.go:28] 2023/06/07 10:38:02 register user router success
+[INFO][router.go:23] 2023/06/07 10:38:02 init app success
+[INFO][web.go:29] 2023/06/07 10:38:02 app listening port: 8080
+[INFO][health.go:13] 2023/06/07 10:38:27 health controller wrapper Test
+[INFO][health.go:10] 2023/06/07 10:38:27 Apiwrapper ok

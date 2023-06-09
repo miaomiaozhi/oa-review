@@ -19,12 +19,12 @@ func InitDataBase(conf *conf.OaReviewConf) {
 		DBName:   conf.MustGetString("mysql.dbname"),
 	}
 	mdb, err := NewDB(dbConfig)
-	mlog.Debug("db config info is")
-	mlog.Debug(dbConfig.Username)
-	mlog.Debug(dbConfig.Password)
-	mlog.Debug(dbConfig.Host)
-	mlog.Debug(dbConfig.Port)
-	mlog.Debug(dbConfig.DBName)
+	// mlog.Debug("db config info is")
+	// mlog.Debug(dbConfig.Username)
+	// mlog.Debug(dbConfig.Password)
+	// mlog.Debug(dbConfig.Host)
+	// mlog.Debug(dbConfig.Port)
+	// mlog.Debug(dbConfig.DBName)
 
 	if err != nil {
 		mlog.Fatalf("new db error: %v", err.Error())

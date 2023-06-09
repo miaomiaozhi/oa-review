@@ -7,7 +7,7 @@
   "mysql": {
     "username": "root",
     "password": "mozezhao",
-    "host": "db",
+    "host": "localhost",
     "port": 3306,
     "dbname": "oa_review"
   },
